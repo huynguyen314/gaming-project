@@ -1,7 +1,7 @@
 # Decsription of this project
 
-This project is using for demo to FA about how to initialize a project and draft data pipeline
-
+Gaming project
+User retention and income maximization based on game type, income channel (cash in/advertisement), and user information
 # Purpose
 
 Building the data pipeline
