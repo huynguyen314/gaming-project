@@ -31,7 +31,7 @@ def create_csv_file_User():
     Register_Date = []
     Country_Code= []
     Is_Active= []
-    RECORD_COUNT = 1000
+    RECORD_COUNT = 10000
  
     for i in range(RECORD_COUNT):
         User_ID.append(str(i)),
