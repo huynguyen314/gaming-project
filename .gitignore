@@ -1,1 +1,4 @@
 raw-folder/
+.vscode/
+__pycache__/
+work-folder/
