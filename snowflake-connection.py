@@ -12,7 +12,7 @@ ctx = snowflake.connector.connect(
     )
 cs = ctx.cursor()
 try:
-    cs.execute("put file://c:\Users\HUYNGUYEN\python-snowflake\work-folder\eCPM-by-Country-Continent2.csv @project_stage;")
+    cs.execute("put file://c:\\Users\\HUYNGUYEN\\python-snowflake\\work-folder\\eCPM-by-Country-Continent2.csv @project_stage")
     #cs.execute("list @project_stage;")
     one_row = cs.fetchone()
     print(one_row[0])
