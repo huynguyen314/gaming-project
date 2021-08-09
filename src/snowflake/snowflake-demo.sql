@@ -35,9 +35,10 @@ CREATE TABLE CUSTOMER
 CREATE OR REPLACE STAGE project_stage
 file_format = (type = 'CSV' field_delimiter = ',' skip_header=1);
 
-put file://c:Users\HUYNGUYEN\python-snowflake\work-folder\user.csv @project_stage;
-put file://c:Users\HUYNGUYEN\python-snowflake\work-folder\user_transaction.csv @project_stage;
-put file://c:Users\HUYNGUYEN\python-snowflake\work-folder\date.csv @project_stage;
+put file://c:\Users\HUYNGUYEN\python-snowflake\work-folder\user.csv @project_stage;
+put file://c:\Users\HUYNGUYEN\python-snowflake\work-folder\user_transaction.csv @project_stage;
+put file://c:\Users\HUYNGUYEN\python-snowflake\work-folder\date.csv @project_stage;
+put file://c:\Users\HUYNGUYEN\python-snowflake\work-folder\eCPM-by-Country-Continent.csv @project_stage;
 
 -- Create a Pipe
 create pipe mydb.myschema.mypipe if not exists as copy into mydb.myschema.mytable from @mydb.myschema.mystage;
