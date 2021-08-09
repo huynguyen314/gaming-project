@@ -1,6 +1,10 @@
 -- Set up Database
+CREATE DATABASE GamingGroup6;
+GO
 
-
+-- 
+USE [GamingGroup6];
+GO
 --- Create Country Audit Table
 
 CREATE TABLE dbo.CountryAudit 
