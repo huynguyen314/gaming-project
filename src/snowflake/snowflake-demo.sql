@@ -40,6 +40,10 @@ put file://c:\Users\HUYNGUYEN\python-snowflake\work-folder\user_transaction.csv 
 put file://c:\Users\HUYNGUYEN\python-snowflake\work-folder\date.csv @project_stage;
 put file://c:\Users\HUYNGUYEN\python-snowflake\work-folder\eCPM-by-Country-Continent.csv @project_stage;
 
+-- Copy data from stage into table
+copy into <table name> 
+from @project_stage/<csv file>
+
 -- Create a Pipe
 create pipe mydb.myschema.mypipe if not exists as copy into mydb.myschema.mytable from @mydb.myschema.mystage;
 
