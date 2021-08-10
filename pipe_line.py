@@ -8,14 +8,13 @@ def create_csv_file_from_server():
                         'Server=HUYNGUYEN-PC;'
                         'Database=TestDB;'
                         'Trusted_Connection=yes;')
+    tables = ['User', 'Country', 'Date', 'User_Transaction', 'eCPM']
+    for table in tables:
+        table_name = 'select * from TestDB.dbo.' + table
+        sql_query = pd.read_sql_query(table_name,conn) # here, the 'conn' is the variable that contains your database connection information from step 2
 
-    sql_query = pd.read_sql_query(''' 
-                                select * from TestDB.dbo.UserInfo
-                                '''
-                                ,conn) # here, the 'conn' is the variable that contains your database connection information from step 2
-
-    df = pd.DataFrame(sql_query)
-    df.to_csv (r'C:\Users\HUYNGUYEN\user.csv', index = False) # place 'r' before the path name to avoid any errors in the path
+        df = pd.DataFrame(sql_query)
+        df.to_csv (f'C:\\Users\\HUYNGUYEN\\{table}.csv', index = False) # place 'r' before the path name to avoid any errors in the path
 
 def snowflake_connect():
     ctx = snowflake.connector.connect(
