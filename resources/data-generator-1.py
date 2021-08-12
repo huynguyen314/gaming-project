@@ -38,7 +38,7 @@ def create_csv_file_User():
         User_Name.append(str(fake.user_name())),
         Buying_Method.append(random.choice(['Purchased','Free'])),
         Register_Date.append(datetime.fromtimestamp(random.randint(Begin_Timestamp, Now_Timestamp))),
-        Country_Code.append(random.choice(Country)),
+        Country_Code.append(random.randint(1, 20)),
         Is_Active.append(random.choice([True,False]))
  
     dict = {
