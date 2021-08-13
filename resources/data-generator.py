@@ -14,7 +14,7 @@ COUNTRIES = ['United States', 'Japan', 'Taiwan', 'Australia', 'South Korea',
 eCPM = {country : 5 + 10*round(random.random(), 2) for country in COUNTRIES}
 BEGIN_TIMESTAMP = 1609459200 # January 1, 2021 12:00:00 AM
 NOW_TIME = round(datetime.now().timestamp())
-RECORD_COUNT = 5
+RECORD_COUNT = 5000
 fake = Faker()
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
