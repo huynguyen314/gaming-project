@@ -14,7 +14,7 @@ COUNTRIES = ['United States', 'Japan', 'Taiwan', 'Australia', 'South Korea',
 eCPM = {country : 5 + 10*round(random.random(), 2) for country in COUNTRIES}
 BEGIN_TIMESTAMP = 1609459200 # January 1, 2021 12:00:00 AM
 NOW_TIME = round(datetime.now().timestamp())
-RECORD_COUNT = 5
+RECORD_COUNT = 5000
 fake = Faker()
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -100,7 +100,7 @@ def create_empty_table():
         writer = csv.DictWriter(memberfile, fieldnames=fieldnames)
         writer.writeheader()
 
-    with open(transaction_table_path, 'w', newline='') as transactionfile:
+    with open(user_transaction_path, 'w', newline='') as transactionfile:
         fieldnames = ['SessionID', 'UserID', 'CountryID', 'StartDate', 'StartDateID', 'StartTimestamp', 'EndTimestamp',
                       'CashSpend', 'NoImpression', 'OS', 'OsVersion']
         writer = csv.DictWriter(transactionfile, fieldnames=fieldnames)
