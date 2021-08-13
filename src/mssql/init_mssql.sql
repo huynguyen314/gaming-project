@@ -62,7 +62,62 @@ GO
 -- set up Schema
 
 -- Create Table
+CREATE TABLE Country
+(
+	CountryID TINYINT NOT NULL PRIMARY KEY,
+	CountryName VARCHAR(50) NULL
+);
 
+CREATE TABLE Calendar
+(
+	DateID INT NOT NULL PRIMARY KEY,
+	Date DATETIME NOT NULL,
+	Day TINYINT NOT NULL,
+	Month TINYINT NOT NULL,
+	Year TINYINT NOT NULL
+);
+
+CREATE TABLE Membership
+(
+	MembershipID TINYINT NOT NULL PRIMARY KEY,
+	MembershipName VARCHAR(50) NOT NULL,
+	Cost SMALLMONEY NOT NULL
+)
+
+CREATE TABLE eCPM
+(
+	CountryID TINYINT FOREIGN KEY REFERENCES Country(CountryID),
+	eCPM SMALLMONEY NOT NULL
+);
+
+CREATE TABLE UserInfo
+(
+	UserID INT NOT NULL PRIMARY KEY,
+	UserName VARCHAR(50) NOT NULL,
+	RegisteredDateID INT FOREIGN KEY REFERENCES Calendar(DateID),
+	RegisteredDate DATETIME NOT NULL,
+	CountryID TINYINT FOREIGN KEY REFERENCES Country(CountryID),
+	CountryName VARCHAR(50) NULL,
+	MembershipID TINYINT FOREIGN KEY REFERENCES Membership(MembershipID),
+	LevelPlayer TINYINT NOT NULL,
+	Email VARCHAR(50) NULL,
+	Age TINYINT NULL,
+	Gender TINYINT NULL
+);
+
+CREATE TABLE Transactions
+(
+	LogID VARCHAR(70) NOT NULL PRIMARY KEY,
+	UserID INT FOREIGN KEY REFERENCES UserInfo(UserID),
+	CountryID TINYINT FOREIGN KEY REFERENCES Country(CountryID),
+	StartDateID INT NOT NULL,
+	StartTimestamp INT NOT NULL,
+	EndTimestamp INT NOT NULL,
+	CashSpend MONEY NOT NULL,
+	NoImpression TINYINT NULL,
+	OS VARCHAR(50) NULL,
+	OsVersion TINYINT NULL
+)
 -- Create Agent Job / Schedule
 
 -- Create Stored Procedure
