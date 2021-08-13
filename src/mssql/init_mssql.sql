@@ -29,8 +29,6 @@ CREATE TABLE UserInfo
 	UserName VARCHAR(50) NOT NULL,
 	RegisterDateID INT FOREIGN KEY REFERENCES Calendar(DateID),
 	RegisterDate DATE NOT NULL,
-	CountryID INT FOREIGN KEY REFERENCES Country_eCPM(CountryID),
-	CountryName VARCHAR(50) NULL,
 	MembershipID INT FOREIGN KEY REFERENCES Membership(MembershipID),
 	Email VARCHAR(50) NULL,
 	Age TINYINT NULL,
