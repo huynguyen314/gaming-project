@@ -100,7 +100,7 @@ def create_empty_table():
         writer = csv.DictWriter(memberfile, fieldnames=fieldnames)
         writer.writeheader()
 
-    with open(transaction_table_path, 'w', newline='') as transactionfile:
+    with open(user_transaction_path, 'w', newline='') as transactionfile:
         fieldnames = ['SessionID', 'UserID', 'CountryID', 'StartDate', 'StartDateID', 'StartTimestamp', 'EndTimestamp',
                       'CashSpend', 'NoImpression', 'OS', 'OsVersion']
         writer = csv.DictWriter(transactionfile, fieldnames=fieldnames)
