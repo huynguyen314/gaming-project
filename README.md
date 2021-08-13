@@ -8,7 +8,7 @@ Building the data pipeline to solve the business problem
 
 # Detail of Work
 
-1. Generate 3 raw flat files related to the domain of project with Python: Transactions, Users and CPM (Cost Per Impresstion) by country 
+1. Generate 3 raw flat files related to the domain of project with Python: Transactions, Users and CPM (Cost Per Impresstion) by country
 
 2. Store these files in Raw-folder and then move to Work-folder 
 
