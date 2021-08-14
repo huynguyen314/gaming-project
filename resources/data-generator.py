@@ -48,8 +48,8 @@ def create_csv_user_data(record_count):
             init_log_id = round(datetime.now().timestamp())
             field_names = ['SessionID','UserID', 'UserName', 'CountryName', 'Age', 'Email', 'Gender',
                             'Membership', 'Cost','RegisterDate', 'RegisteredDateID',
-                            'StartDateID' , 'StartDate', 'StartTimestamp','EndTimestamp',  'CashSpend', 'NoImpression', 'eCPM','OS', 'OS_Version']
-
+                            'StartDateID' , 'StartDate', 'StartTimestamp','EndTimestamp', 
+                             'CashSpend', 'NoImpression', 'eCPM','OS', 'OS_Version']
             transaction_writer = csv.DictWriter(csvfile, fieldnames=field_names)
             if os.path.getsize(transaction_table_path) == 0:
                 transaction_writer.writeheader()
