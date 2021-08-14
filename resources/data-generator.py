@@ -30,7 +30,7 @@ transaction_table_path = f'{dir_path}\\raw-folder\\table-user-transaction-{time_
 
 def create_csv_user_data(record_count):
     # Create user data
-    for i in range(NOW_TIME, NOW_TIME + record_count):
+    for i in range(1000*NOW_TIME, 1000*NOW_TIME + record_count):
         user = fake.user_name()
         email = fake.email()
         age = random.randint(12, 60)
@@ -101,8 +101,8 @@ def create_empty_table():
         writer.writeheader()
 
     with open(user_transaction_path, 'w', newline='') as transactionfile:
-        fieldnames = ['SessionID', 'UserID', 'CountryName', 'StartDate', 'StartDateID', 'StartTimestamp', 'EndTimestamp',
-                      'CashSpend', 'NoImpression', 'eCPM', 'OS', 'OsVersion']
+        fieldnames = ['SessionID', 'UserID', 'Country', 'StartDate', 'StartDateID', 'StartTimestamp', 'EndTimestamp',
+                      'CashSpend', 'NoImpression','eCPM','OS', 'OsVersion']
         writer = csv.DictWriter(transactionfile, fieldnames=fieldnames)
         writer.writeheader()
 
