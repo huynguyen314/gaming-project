@@ -37,7 +37,7 @@ def create_csv_user_data(record_count):
         gender = random.choice(['Male', 'Female', 'Unknown'])
         register_timestamp = random.randint(BEGIN_TIMESTAMP, NOW_TIME)
         register_date = date.fromtimestamp(register_timestamp)
-        register_dateID = int(register_date.strftime("%Y%m%d"))
+        register_dateID = register_date.strftime("%Y%m%d")
         country = random.choice(COUNTRIES)
         membership =  random.choice(['Basic', 'Professional']) 
         os_name = random.choice(['Android', 'iOS'])
@@ -71,7 +71,7 @@ def create_csv_user_data(record_count):
                         'RegisterDateID': register_dateID,
                         'Membership': membership,
                         'MembershipCost': 0 if membership == 'Basic' else 4.99,
-                        'SessionStartDateID': int(start_date.strftime("%Y%m%d")),  
+                        'SessionStartDateID': start_date.strftime("%Y%m%d"),  
                         'SessionStartDate': date.fromtimestamp(start_timestamp),
                         'StartTimestamp': start_timestamp,
                         'EndTimestamp': start_timestamp + random.randint(300, 4800),
@@ -85,8 +85,8 @@ def create_csv_user_data(record_count):
 
 def create_empty_table():
     with open(user_table_path, 'w', newline='') as userfile:
-        fieldnames = ['UserID','UserName','RegisteredDateID', 'CountryID',
-                      'MembershipID', 'Email', 'Age', 'Gender']
+        fieldnames = ['UserID','UserName','RegisteredDateID', 'RegisterDate','CountryName',
+                      'Membership', 'Email', 'Age', 'Gender']
         writer = csv.DictWriter(userfile, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -101,34 +101,27 @@ def create_empty_table():
         writer.writeheader()
 
     with open(user_transaction_path, 'w', newline='') as transactionfile:
-        fieldnames = ['SessionID', 'UserID', 'CountryID', 'StartDate', 'StartDateID', 'StartTimestamp', 'EndTimestamp',
-                      'CashSpend', 'NoImpression', 'OS', 'OsVersion']
+        fieldnames = ['SessionID', 'UserID', 'CountryName', 'StartDate', 'StartDateID', 'StartTimestamp', 'EndTimestamp',
+                      'CashSpend', 'NoImpression', 'eCPM', 'OS', 'OsVersion']
         writer = csv.DictWriter(transactionfile, fieldnames=fieldnames)
         writer.writeheader()
 
 
 def create_csv_calendar():
     with open(f'{dir_path}\\work-folder\\Calendar.csv', 'w', newline='') as csvfile:
-        fieldnames = ['Date','Year','Month', 'Quarter']
+        fieldnames = ['DateID', 'Date','Day','Month', 'Year']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
         start_date = BEGIN_TIMESTAMP
         while start_date <= NOW_TIME:
             current_date = date.fromtimestamp(start_date)
-            year, month = current_date.year, current_date.month
-            if month in (1, 2, 3):
-                quarter = 1
-            elif month in (4, 5, 6):
-                quarter = 2
-            elif month in (7, 8, 9):
-                quarter = 3
-            else:
-                quarter = 4 
             writer.writerow(
                 {
+                    'DateID': current_date.strftime("%Y%m%d"),
                     'Date': current_date,
-                    'Year': year,
-                    'Month': month,
-                    'Quarter': quarter
+                    'Day': current_date.day, 
+                    'Month': current_date.month,
+                    'Year': current_date.year
                 }
             )
             start_date += 86400

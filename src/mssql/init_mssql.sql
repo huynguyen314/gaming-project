@@ -29,6 +29,7 @@ CREATE TABLE UserInfo
 	UserName VARCHAR(50) NOT NULL,
 	RegisterDateID INT FOREIGN KEY REFERENCES Calendar(DateID),
 	RegisterDate DATE NOT NULL,
+	Country VARCHAR(5) NULL,
 	MembershipID INT FOREIGN KEY REFERENCES Membership(MembershipID),
 	Email VARCHAR(50) NULL,
 	Age TINYINT NULL,
@@ -45,8 +46,8 @@ CREATE TABLE Transactions
 	StartTimestamp INT NOT NULL,
 	EndTimestamp INT NOT NULL,
 	SestionCashSpend MONEY NOT NULL,
-	eCPM MONEY NULL,
 	CountImpression TINYINT NULL,
+	eCPM MONEY NULL,
 	OS VARCHAR(50) NULL,
 	OsVersion TINYINT NULL
 )
