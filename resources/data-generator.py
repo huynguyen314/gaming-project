@@ -47,8 +47,8 @@ def create_csv_user_data(record_count):
         with open(transaction_table_path, 'a', newline='') as csvfile:
             init_log_id = round(datetime.now().timestamp())
             field_names = ['SessionID','UserID', 'UserName', 'CountryName', 'Age', 'Email', 'Gender',
-                            'Membership', 'MembershipCost','RegisterDate', 'RegisterDateID',
-                            'SessionStartDateID' , 'SessionStartDate', 'StartTimestamp','EndTimestamp',  'SessionCashSpend', 'NoImpression', 'eCPM','OS', 'OS_Version']
+                            'Membership', 'Cost','RegisterDate', 'RegisteredDateID',
+                            'StartDateID' , 'StartDate', 'StartTimestamp','EndTimestamp',  'CashSpend', 'NoImpression', 'eCPM','OS', 'OS_Version']
             transaction_writer = csv.DictWriter(csvfile, fieldnames=field_names)
             if os.path.getsize(transaction_table_path) == 0:
                 transaction_writer.writeheader()
@@ -68,14 +68,14 @@ def create_csv_user_data(record_count):
                         'Email': email,
                         'Gender': gender,
                         'RegisterDate': register_date,
-                        'RegisterDateID': register_dateID,
+                        'RegisteredDateID': register_dateID,
                         'Membership': membership,
                         'MembershipCost': 0 if membership == 'Basic' else 4.99,
-                        'SessionStartDateID': start_date.strftime("%Y%m%d"),  
-                        'SessionStartDate': date.fromtimestamp(start_timestamp),
+                        'StartDateID': start_date.strftime("%Y%m%d"),  
+                        'StartDate': date.fromtimestamp(start_timestamp),
                         'StartTimestamp': start_timestamp,
                         'EndTimestamp': start_timestamp + random.randint(300, 4800),
-                        'SessionCashSpend': random.choice([0, round(3 * random.random(), 2)]),
+                        'CashSpend': random.choice([0, round(3 * random.random(), 2)]),
                         'NoImpression': 0 if membership == 'Professional' else random.randint(3, 10),
                         'eCPM': eCPM[country],
                         'OS': os_name,
@@ -106,32 +106,10 @@ def create_empty_table():
         writer = csv.DictWriter(transactionfile, fieldnames=fieldnames)
         writer.writeheader()
 
-
-def create_csv_calendar():
-    with open(f'{dir_path}\\work-folder\\Calendar.csv', 'w', newline='') as csvfile:
-        fieldnames = ['DateID', 'Date','Day','Month', 'Year']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        start_date = BEGIN_TIMESTAMP
-        while start_date <= NOW_TIME:
-            current_date = date.fromtimestamp(start_date)
-            writer.writerow(
-                {
-                    'DateID': current_date.strftime("%Y%m%d"),
-                    'Date': current_date,
-                    'Day': current_date.day, 
-                    'Month': current_date.month,
-                    'Year': current_date.year
-                }
-            )
-            start_date += 86400
-
-
 if __name__ == '__main__':
     t1 = datetime.now()
     print('Creating data...')
     create_csv_user_data(RECORD_COUNT)
     create_empty_table()
-    create_csv_calendar()
     t2 = datetime.now()
     print(f"Done in time {t2-t1}")
