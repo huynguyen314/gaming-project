@@ -47,8 +47,8 @@ def create_csv_user_data(record_count):
         with open(transaction_table_path, 'a', newline='') as csvfile:
             init_log_id = round(datetime.now().timestamp())
             field_names = ['SessionID','UserID', 'UserName', 'CountryName', 'Age', 'Email', 'Gender',
-                            'Membership', 'MembershipCost','RegisterDate', 'RegisterDateID',
-                            'SessionStartDateID' , 'SessionStartDate', 'StartTimestamp','EndTimestamp',  'SessionCashSpend', 'NoImpression', 'eCPM','OS', 'OS_Version']
+                            'Membership', 'MembershipCost','RegisterDate', 'RegisteredDateID',
+                            'StartDateID' , 'StartDate', 'StartTimestamp','EndTimestamp',  'CashSpend', 'CountImpression', 'eCPM','OS', 'OSVersion']
             transaction_writer = csv.DictWriter(csvfile, fieldnames=field_names)
             if os.path.getsize(transaction_table_path) == 0:
                 transaction_writer.writeheader()
@@ -68,18 +68,18 @@ def create_csv_user_data(record_count):
                         'Email': email,
                         'Gender': gender,
                         'RegisterDate': register_date,
-                        'RegisterDateID': register_dateID,
+                        'RegisteredDateID': register_dateID,
                         'Membership': membership,
                         'MembershipCost': 0 if membership == 'Basic' else 4.99,
-                        'SessionStartDateID': start_date.strftime("%Y%m%d"),  
-                        'SessionStartDate': date.fromtimestamp(start_timestamp),
+                        'StartDateID': start_date.strftime("%Y%m%d"),  
+                        'StartDate': date.fromtimestamp(start_timestamp),
                         'StartTimestamp': start_timestamp,
                         'EndTimestamp': start_timestamp + random.randint(300, 4800),
-                        'SessionCashSpend': random.choice([0, round(3 * random.random(), 2)]),
-                        'NoImpression': 0 if membership == 'Professional' else random.randint(3, 10),
+                        'CashSpend': random.choice([0, round(3 * random.random(), 2)]),
+                        'CountImpression': 0 if membership == 'Professional' else random.randint(3, 10),
                         'eCPM': eCPM[country],
                         'OS': os_name,
-                        'OS_Version': os_version
+                        'OSVersion': os_version
                     }
                 )
 
