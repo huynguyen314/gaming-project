@@ -11,7 +11,7 @@ COUNTRIES = ['United States', 'Japan', 'Taiwan', 'Australia', 'South Korea',
              'Denmark', 'Sweden', 'France', 'United Arab Emirates', 'Ireland'
 ]
 
-eCPM = {country : 5 + 10*round(random.random(), 2) for country in COUNTRIES}
+eCPM = {country : 5 + round(10*random.random(), 2) for country in COUNTRIES}
 BEGIN_TIMESTAMP = 1609459200 # January 1, 2021 12:00:00 AM
 NOW_TIME = round(datetime.now().timestamp())
 RECORD_COUNT = 5000
@@ -32,7 +32,7 @@ def create_csv_user_data(record_count):
     # Create user data
     for i in range(1000*NOW_TIME, 1000*NOW_TIME + record_count):
         user = fake.user_name()
-        email = fake.email()
+        email = user + '@' + fake.free_email_domain()
         age = random.randint(12, 60)
         gender = random.choice(['Male', 'Female', 'Unknown'])
         register_timestamp = random.randint(BEGIN_TIMESTAMP, NOW_TIME)
@@ -76,7 +76,7 @@ def create_csv_user_data(record_count):
                         'StartTimestamp': start_timestamp,
                         'EndTimestamp': start_timestamp + random.randint(300, 4800),
                         'SessionCashSpend': random.choice([0, round(3 * random.random(), 2)]),
-                        'NoImpression': 0 if membership == 2 else random.randint(3, 10),
+                        'NoImpression': 0 if membership == 'Professional' else random.randint(3, 10),
                         'eCPM': eCPM[country],
                         'OS': os_name,
                         'OS_Version': os_version
@@ -96,13 +96,13 @@ def create_empty_table():
         writer.writeheader()
 
     with open(membership_path, 'w', newline='') as memberfile:
-        fieldnames = ['MembershipName', 'Cost']
+        fieldnames = ['Membership', 'Cost']
         writer = csv.DictWriter(memberfile, fieldnames=fieldnames)
         writer.writeheader()
 
     with open(user_transaction_path, 'w', newline='') as transactionfile:
-        fieldnames = ['SessionID', 'UserID', 'Country', 'StartDate', 'StartDateID', 'StartTimestamp', 'EndTimestamp',
-                      'CashSpend', 'NoImpression','eCPM','OS', 'OsVersion']
+        fieldnames = ['SessionID', 'UserID', 'CountryName', 'StartDateID', 'StartDate', 'StartTimestamp', 'EndTimestamp',
+                      'CashSpend', 'CountImpression','eCPM','OS', 'OsVersion']
         writer = csv.DictWriter(transactionfile, fieldnames=fieldnames)
         writer.writeheader()
 

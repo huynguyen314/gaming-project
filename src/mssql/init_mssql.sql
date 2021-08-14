@@ -18,7 +18,7 @@ CREATE TABLE Calendar
 CREATE TABLE Membership
 (
 	MembershipID INT IDENTITY(1,1) PRIMARY KEY,
-	MembershipName VARCHAR(50) NOT NULL,
+	Membership VARCHAR(50) NOT NULL,
 	Cost MONEY NOT NULL
 )
 
@@ -27,29 +27,29 @@ CREATE TABLE UserInfo
 (
 	UserID VARCHAR(50) NOT NULL PRIMARY KEY,
 	UserName VARCHAR(50) NOT NULL,
-	RegisterDateID INT FOREIGN KEY REFERENCES Calendar(DateID),
+	RegisteredDateID INT FOREIGN KEY REFERENCES Calendar(DateID),
 	RegisterDate DATE NOT NULL,
-	Country VARCHAR(5) NULL,
-	MembershipID INT FOREIGN KEY REFERENCES Membership(MembershipID),
+	CountryName VARCHAR(50) NULL,
+	Membership VARCHAR(50),
 	Email VARCHAR(50) NULL,
 	Age TINYINT NULL,
-	Gender VARCHAR(10) NULL
+	Gender VARCHAR(50) NULL
 );
 
 CREATE TABLE Transactions
 (
-	SessionID VARCHAR(70) NOT NULL PRIMARY KEY,
+	SessionID VARCHAR(50) NOT NULL PRIMARY KEY,
 	UserID VARCHAR(50) FOREIGN KEY REFERENCES UserInfo(UserID),
-	CountryID INT FOREIGN KEY REFERENCES Country(CountryID),
+	CountryName INT FOREIGN KEY REFERENCES Country(CountryID),
 	StartDateID INT NOT NULL,
-	SessionStartDate DATE NOT NULL,
+	StartDate DATE NOT NULL,
 	StartTimestamp INT NOT NULL,
 	EndTimestamp INT NOT NULL,
-	SestionCashSpend MONEY NOT NULL,
+	CashSpend MONEY NOT NULL,
 	CountImpression TINYINT NULL,
 	eCPM MONEY NULL,
 	OS VARCHAR(50) NULL,
-	OsVersion TINYINT NULL
+	OsVersion VARCHAR(50) NULL
 )
 -- Create Agent Job / Schedule
 
