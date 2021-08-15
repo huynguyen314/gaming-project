@@ -41,7 +41,7 @@ def create_csv_user_data(record_count):
         countryID = random.randint(0, len(COUNTRIES)-1)
         country = COUNTRIES[countryID]
         membershipID = random.randint(1, 2)
-        membership = ['Basic', 'Professional'][membershipID]
+        membership = ['Basic', 'Professional'][membershipID-1]
         os_name = random.choice(['Android', 'iOS'])
         os_version = random.randint(8, 12) if os_name =='Android' else random.randint(10, 12)
 
