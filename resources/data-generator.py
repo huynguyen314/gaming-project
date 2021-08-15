@@ -25,7 +25,7 @@ user_table_path = f'{dir_path}\\work-folder\\UserInfo.csv'
 user_transaction_path = f'{dir_path}\\work-folder\\Transactions.csv'
 country_path = f'{dir_path}\\work-folder\\Country.csv'
 membership_path = f'{dir_path}\\work-folder\\Membership.csv'
-transaction_table_path = f'{dir_path}\\raw-folder\\table-user-transaction-{time_stamp}.csv'
+transaction_table_path = f'{dir_path}\\raw-folder\\table-user-transaction.csv'
 
 
 def create_csv_user_data(record_count):
@@ -38,8 +38,8 @@ def create_csv_user_data(record_count):
         register_timestamp = random.randint(BEGIN_TIMESTAMP, NOW_TIME)
         register_date = date.fromtimestamp(register_timestamp)
         register_dateID = register_date.strftime("%Y%m%d")
-        countryID = random.randint(0, len(COUNTRIES)-1)
-        country = COUNTRIES[countryID]
+        countryID = random.randint(1, len(COUNTRIES))
+        country = COUNTRIES[countryID-1]
         membershipID = random.randint(1, 2)
         membership = ['Basic', 'Professional'][membershipID-1]
         os_name = random.choice(['Android', 'iOS'])
@@ -47,7 +47,6 @@ def create_csv_user_data(record_count):
 
         # Create user transaction data
         with open(transaction_table_path, 'a', newline='') as csvfile:
-            init_log_id = round(datetime.now().timestamp())
             field_names = ['SessionID','UserID', 'UserName', 'CountryID','CountryName', 'Age', 'Email', 'Gender',
                             'MembershipID', 'Membership', 'Cost','RegisterDate', 'RegisteredDateID',
                             'StartDateID' , 'StartDate', 'StartTimestamp','EndTimestamp', 
@@ -63,7 +62,7 @@ def create_csv_user_data(record_count):
                     start_date = date.fromtimestamp(start_timestamp)
                 transaction_writer.writerow(
                     {
-                        'SessionID': user + str(init_log_id + j),
+                        'SessionID': user + str(random.random())[2:],
                         'UserID': i,
                         'UserName': user,
                         'CountryID': countryID,

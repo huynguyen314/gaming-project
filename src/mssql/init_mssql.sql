@@ -52,8 +52,7 @@ CREATE TABLE Transactions(
 	[DC_eCPM] money NULL,
 	[OS] varchar(50) NULL,
 	[OsVersion] varchar(50) NULL
-)
-
+);
 -- Load datetime information into Calendar Table
 DECLARE @StartDate  date = '20210101';
 
