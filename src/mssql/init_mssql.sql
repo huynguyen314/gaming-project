@@ -17,7 +17,7 @@ CREATE TABLE Calendar
 
 CREATE TABLE Membership
 (
-	MembershipID INT PRIMARY KEY,
+	MembershipID TINYINT PRIMARY KEY,
 	Membership VARCHAR(50) NOT NULL,
 	Cost MONEY NOT NULL
 )
@@ -30,7 +30,7 @@ CREATE TABLE UserInfo
 	RegisteredDateID VARCHAR(50) FOREIGN KEY REFERENCES Calendar(DateID),
 	RegisterDate DATE NOT NULL,
 	CountryName VARCHAR(50) NULL,
-	MembershipID INT FOREIGN KEY REFERENCES Membership(MembershipID),
+	MembershipID TINYINT FOREIGN KEY REFERENCES Membership(MembershipID),
 	Email VARCHAR(50) NULL,
 	Age TINYINT NULL,
 	Gender VARCHAR(50) NULL
