@@ -36,20 +36,22 @@ CREATE TABLE UserInfo
 	Gender VARCHAR(50) NULL
 );
 
-CREATE TABLE Transactions
-(
-	SessionID VARCHAR(50) NOT NULL PRIMARY KEY,
-	UserID VARCHAR(50) FOREIGN KEY REFERENCES UserInfo(UserID),
-	CountryID TINYINT FOREIGN KEY REFERENCES Country(CountryID),
-	StartDateID VARCHAR(50) NOT NULL,
-	StartDate DATE NOT NULL,
-	StartTimestamp INT NOT NULL,
-	EndTimestamp INT NOT NULL,
-	CashSpend MONEY NOT NULL,
-	CountImpression TINYINT NULL,
-	eCPM MONEY NULL,
-	OS VARCHAR(50) NULL,
-	OsVersion VARCHAR(50) NULL
+-- Script mới
+
+
+CREATE TABLE Transactions(
+	[SessionID] varchar(50) NOT NULL,
+	[UserID] varchar(50) NOT NULL FOREIGN KEY REFERENCES UserInfo(UserID),
+	[CountryID] tinyint NULL FOREIGN KEY REFERENCES Country(CountryID),
+	[StartDateID] varchar(50) NOT NULL FOREIGN KEY REFERENCES Calendar(DateID),
+	[DC_StartDate] date NOT NULL,
+	[DC_StartTimestamp] int NOT NULL,
+	[DC_EndTimestamp] int NOT NULL,
+	[DC_CashSpend] money NULL,
+	[DC_CountImpression] tinyint NULL,
+	[DC_eCPM] money NULL,
+	[OS] varchar(50) NULL,
+	[OsVersion] varchar(50) NULL
 )
 
 -- Load datetime information into Calendar Table
