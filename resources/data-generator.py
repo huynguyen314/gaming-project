@@ -25,8 +25,12 @@ user_table_path = f'{dir_path}\\work-folder\\UserInfo.csv'
 user_transaction_path = f'{dir_path}\\work-folder\\Transactions.csv'
 country_path = f'{dir_path}\\work-folder\\Country.csv'
 membership_path = f'{dir_path}\\work-folder\\Membership.csv'
-transaction_table_path = f'{dir_path}\\raw-folder\\table-user-transaction.csv'
-
+transaction_table_path = f'{dir_path}\\raw-folder\\table-user-transaction{time_stamp}.csv'
+user_snowflake = f'{dir_path}\\data-snowflake\\UserInfoSnowflake.csv'
+user_transaction_snowflake = f'{dir_path}\\data-snowflake\\TransactionsSnowflake.csv'
+country_snowflake = f'{dir_path}\\data-snowflake\\CountrySnowflake.csv'
+membership_snowflake= f'{dir_path}\\data-snowflake\\MembershipSnowflake.csv'
+calendar_snowflake = f'{dir_path}\\data-snowflake\\CalendarSnowflake.csv'
 
 def create_csv_user_data(record_count):
     # Create user data
@@ -94,7 +98,18 @@ def create_empty_table():
         writer = csv.DictWriter(userfile, fieldnames=fieldnames)
         writer.writeheader()
 
+    with open(user_snowflake, 'w', newline='') as userfile:
+        fieldnames = ['UserID','UserName','RegisteredDateID', 'RegisterDate','CountryName',
+                      'MembershipID', 'Email', 'Age', 'Gender']
+        writer = csv.DictWriter(userfile, fieldnames=fieldnames)
+        writer.writeheader() 
+
     with open(country_path, 'w', newline='') as countryfile:
+        fieldnames = ['CountryId', 'CountryName']
+        writer = csv.DictWriter(countryfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+    with open(country_snowflake, 'w', newline='') as countryfile:
         fieldnames = ['CountryId', 'CountryName']
         writer = csv.DictWriter(countryfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -104,11 +119,28 @@ def create_empty_table():
         writer = csv.DictWriter(memberfile, fieldnames=fieldnames)
         writer.writeheader()
 
+    with open(membership_snowflake, 'w', newline='') as memberfile:
+        fieldnames = ['MembershipID', 'Membership', 'Cost']
+        writer = csv.DictWriter(memberfile, fieldnames=fieldnames)
+        writer.writeheader()
+
     with open(user_transaction_path, 'w', newline='') as transactionfile:
         fieldnames = ['SessionID', 'UserID', 'CountryName', 'StartDateID', 'StartDate', 'StartTimestamp', 'EndTimestamp',
                       'CashSpend', 'CountImpression','eCPM','OS', 'OsVersion']
         writer = csv.DictWriter(transactionfile, fieldnames=fieldnames)
         writer.writeheader()
+
+    with open(user_transaction_snowflake, 'w', newline='') as transactionfile:
+        fieldnames = ['SessionID', 'UserID', 'CountryID', 'StartDateID', 'StartDate', 'StartTimestamp', 'EndTimestamp',
+                      'CashSpend', 'CountImpression','eCPM','OS', 'OsVersion']
+        writer = csv.DictWriter(transactionfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+    with open(calendar_snowflake, 'w', newline='') as memberfile:
+        fieldnames = ['DateID', 'Date', 'Day', 'Month', 'Year']
+        writer = csv.DictWriter(memberfile, fieldnames=fieldnames)
+        writer.writeheader()
+    
 
 if __name__ == '__main__':
     t1 = datetime.now()
