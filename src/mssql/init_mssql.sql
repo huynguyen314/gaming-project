@@ -2,7 +2,7 @@
 -- Create Table
 CREATE TABLE Country
 (
-	CountryID INT IDENTITY(1,1) PRIMARY KEY,
+	CountryID TINYINT PRIMARY KEY,
 	CountryName VARCHAR(50) NULL
 )
 
@@ -17,7 +17,7 @@ CREATE TABLE Calendar
 
 CREATE TABLE Membership
 (
-	MembershipID INT IDENTITY(1,1) PRIMARY KEY,
+	MembershipID INT PRIMARY KEY,
 	Membership VARCHAR(50) NOT NULL,
 	Cost MONEY NOT NULL
 )
