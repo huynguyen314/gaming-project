@@ -96,12 +96,12 @@ def create_empty_table():
         writer.writeheader()
 
     with open(country_path, 'w', newline='') as countryfile:
-        fieldnames = ['CountryName']
+        fieldnames = ['CountryId', 'CountryName']
         writer = csv.DictWriter(countryfile, fieldnames=fieldnames)
         writer.writeheader()
 
     with open(membership_path, 'w', newline='') as memberfile:
-        fieldnames = ['Membership', 'Cost']
+        fieldnames = ['MembershipID', 'Membership', 'Cost']
         writer = csv.DictWriter(memberfile, fieldnames=fieldnames)
         writer.writeheader()
 
