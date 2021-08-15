@@ -12,7 +12,7 @@ CREATE TABLE Calendar
 	Date DATE NOT NULL,
 	Day TINYINT NOT NULL,
 	Month TINYINT NOT NULL,
-	Year TINYINT NOT NULL
+	Year INT NOT NULL
 )
 
 CREATE TABLE Membership
@@ -40,7 +40,7 @@ CREATE TABLE Transactions
 (
 	SessionID VARCHAR(50) NOT NULL PRIMARY KEY,
 	UserID VARCHAR(50) FOREIGN KEY REFERENCES UserInfo(UserID),
-	CountryID INT FOREIGN KEY REFERENCES Country(CountryID),
+	CountryID TINYINT FOREIGN KEY REFERENCES Country(CountryID),
 	StartDateID VARCHAR(50) NOT NULL,
 	StartDate DATE NOT NULL,
 	StartTimestamp INT NOT NULL,
@@ -51,6 +51,36 @@ CREATE TABLE Transactions
 	OS VARCHAR(50) NULL,
 	OsVersion VARCHAR(50) NULL
 )
+
+-- Load datetime information into Calendar Table
+DECLARE @StartDate  date = '20210101';
+
+DECLARE @CutoffDate date = DATEADD(DAY, -1, DATEADD(YEAR, 2, @StartDate));
+
+;WITH seq(n) AS 
+(
+  SELECT 0 UNION ALL SELECT n + 1 FROM seq
+  WHERE n < DATEDIFF(DAY, @StartDate, @CutoffDate)
+),
+d(d) AS 
+(
+  SELECT DATEADD(DAY, n, @StartDate) FROM seq
+),
+src AS
+(
+  SELECT
+    DateID          = CONVERT(date, d),
+	TheDate         = CONVERT(date, d),
+    TheDay          = CONVERT(TINYINT, DATEPART(DAY,       d)),
+    TheMonth        = CONVERT(TINYINT, DATEPART(MONTH,     d)),
+    TheYear         = CONVERT(INT, DATEPART(YEAR,      d))
+  FROM d
+)
+INSERT INTO Calendar(DateID, Date, Day, Month, Year)
+SELECT FORMAT (DateID, 'yyyyMMdd') as DateID, TheDate, TheDay,
+TheMonth, TheYear FROM src
+  ORDER BY TheDate
+  OPTION (MAXRECURSION 0);
 -- Create Agent Job / Schedule
 
 -- Create Stored Procedure
