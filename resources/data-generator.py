@@ -38,16 +38,18 @@ def create_csv_user_data(record_count):
         register_timestamp = random.randint(BEGIN_TIMESTAMP, NOW_TIME)
         register_date = date.fromtimestamp(register_timestamp)
         register_dateID = register_date.strftime("%Y%m%d")
-        country = random.choice(COUNTRIES)
-        membership =  random.choice(['Basic', 'Professional']) 
+        countryID = random.randint(0, len(COUNTRIES)-1)
+        country = COUNTRIES[countryID]
+        membershipID = random.randint(1, 2)
+        membership = ['Basic', 'Professional'][membershipID]
         os_name = random.choice(['Android', 'iOS'])
         os_version = random.randint(8, 12) if os_name =='Android' else random.randint(10, 12)
 
         # Create user transaction data
         with open(transaction_table_path, 'a', newline='') as csvfile:
             init_log_id = round(datetime.now().timestamp())
-            field_names = ['SessionID','UserID', 'UserName', 'CountryName', 'Age', 'Email', 'Gender',
-                            'Membership', 'Cost','RegisterDate', 'RegisteredDateID',
+            field_names = ['SessionID','UserID', 'UserName', 'CountryID','CountryName', 'Age', 'Email', 'Gender',
+                            'MembershipID', 'Membership', 'Cost','RegisterDate', 'RegisteredDateID',
                             'StartDateID' , 'StartDate', 'StartTimestamp','EndTimestamp', 
                              'CashSpend', 'CountImpression', 'eCPM','OS', 'OsVersion']
             transaction_writer = csv.DictWriter(csvfile, fieldnames=field_names)
@@ -64,12 +66,14 @@ def create_csv_user_data(record_count):
                         'SessionID': user + str(init_log_id + j),
                         'UserID': i,
                         'UserName': user,
+                        'CountryID': countryID,
                         'CountryName': country,
                         'Age': age,
                         'Email': email,
                         'Gender': gender,
                         'RegisterDate': register_date,
                         'RegisteredDateID': register_dateID,
+                        'MembershipID': membershipID,
                         'Membership': membership,
                         'Cost': 0 if membership == 'Basic' else 4.99,
                         'StartDateID': start_date.strftime("%Y%m%d"),  
