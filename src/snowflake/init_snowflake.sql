@@ -1,11 +1,38 @@
 -- Set up Warehouse
-
+CREATE OR REPLACE WAREHOUSE GAMING_WH WITH
+WAREHOUSE_SIZE = 'XSMALL'
+MAX_CLUSTER_COUNT = 1
+MIN_CLUSTER_COUNT = 1
+AUTO_SUSPEND = 600 -- 600s
+AUTO_RESUME = TRUE
+INITIALLY_SUSPENDED = FALSE
+COMMENT = 'This warehouse is used for gaming project demo.';
 -- Set up Database
 
 -- set up table
 
 -- Create Trigger
 
--- Set up Snowpipe
+-- Set up stage and Snowpipe
+CREATE FILE FORMAT PIPE_DELIM
+TYPE = CSV
+FIELD_DELIMITER = '|'
+FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+SKIP_HEADER = 1
+DATE_FORMAT = 'YYYY-MM-DD';
+--- Creat stage to store files
+CREATE STAGE PROJECT_STAGE
+FILE_FORMAT = PIPE_DELIM;
 
+--- Create pipe to load data from stage to tables
+CREATE PIPE CALENDAR_PIPE AS COPY INTO CALENDAR FROM @PROJECT_STAGE/UPLOAD/CalendarSnowflake.csv.gz;
+CREATE PIPE COUNTRY_PIPE AS COPY INTO COUNTRY FROM @PROJECT_STAGE/UPLOAD/CountrySnowflake.csv.gz;
+CREATE PIPE MEMBERSHIP_PIPE AS COPY INTO MEMBERSHIP FROM @PROJECT_STAGE/UPLOAD/MembershipSnowflake.csv.gz;
+CREATE PIPE USER_PIPE AS COPY INTO USERINFO FROM @PROJECT_STAGE/UPLOAD/UserInfoSnowflake.csv.gz;
+CREATE PIPE TRANSACTIONS_PIPE AS COPY INTO TRANSACTIONS FROM @PROJECT_STAGE/UPLOAD/TransactionsSnowflake.csv.gz;
+
+--- Unload data from stage
+COPY INTO @PROJECT_STAGE/UNLOAD/ FROM FACT_TRANSACTIONS;
+---- Get data from stage to local
+GET @PROJECT_STAGE/UNLOAD/<file name> file://C:\Users\HUYNGUYEN\gaming-project\resources\work-folder;
 -- Task
