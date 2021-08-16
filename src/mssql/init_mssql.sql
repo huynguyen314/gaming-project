@@ -40,7 +40,7 @@ CREATE TABLE UserInfo
 
 
 CREATE TABLE Transactions(
-	[SessionID] varchar(50) NOT NULL,
+	[SessionID] varchar(50) NOT NULL PRIMARY KEY,
 	[UserID] varchar(50) NOT NULL FOREIGN KEY REFERENCES UserInfo(UserID),
 	[CountryID] tinyint NULL FOREIGN KEY REFERENCES Country(CountryID),
 	[StartDateID] varchar(50) NOT NULL FOREIGN KEY REFERENCES Calendar(DateID),
