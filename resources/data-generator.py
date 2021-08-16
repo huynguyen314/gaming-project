@@ -25,7 +25,7 @@ user_table_path = f'{dir_path}\\work-folder\\UserInfo.csv'
 user_transaction_path = f'{dir_path}\\work-folder\\Transactions.csv'
 country_path = f'{dir_path}\\work-folder\\Country.csv'
 membership_path = f'{dir_path}\\work-folder\\Membership.csv'
-transaction_table_path = f'{dir_path}\\raw-folder\\table-user-transaction{time_stamp}.csv'
+transaction_table_path = f'{dir_path}\\raw-folder\\DataFromUsers.csv'
 user_snowflake = f'{dir_path}\\data-snowflake\\UserInfoSnowflake.csv'
 user_transaction_snowflake = f'{dir_path}\\data-snowflake\\TransactionsSnowflake.csv'
 country_snowflake = f'{dir_path}\\data-snowflake\\CountrySnowflake.csv'
@@ -34,6 +34,9 @@ calendar_snowflake = f'{dir_path}\\data-snowflake\\CalendarSnowflake.csv'
 
 def create_csv_user_data(record_count):
     # Create user data
+    if os.path.exists(transaction_table_path):
+        new_path = f'{dir_path}\\raw-folder\\OldDataFromUsers{time_stamp}.csv'
+        os.rename(transaction_table_path, new_path)
     for i in range(1000*NOW_TIME, 1000*NOW_TIME + record_count):
         user = fake.user_name()
         email = user + '@' + fake.free_email_domain()
