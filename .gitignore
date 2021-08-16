@@ -1,4 +1,5 @@
 raw-folder/
+work-folder/
 .vscode/
 __pycache__/
-work-folder/
+data-snowflake/

@@ -1,68 +1,87 @@
--- Set up Database
-CREATE DATABASE GamingGroup6;
-GO
-
--- 
-USE [GamingGroup6];
-GO
---- Create Country Audit Table
-
-CREATE TABLE dbo.CountryAudit 
-(
-  CountryAuditID INT IDENTITY(1,1) NOT NULL,
-  CountryID INT NULL,
-  CountryName VARCHAR(50) NULL,
-  Continent VARCHAR(50) NULL,
-  Operation VARCHAR(10) NOT NULL,
-  UserName VARCHAR(100) NOT NULL,
-  SystemName VARCHAR(100) NOT NULL,
-  UpdatedOn datetime NOT NULL,
-  CONSTRAINT PK_CountryAudit PRIMARY KEY CLUSTERED
-(
-  CountryAuditID ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, 
-  ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]  
-GO
-
-
----Create trigger after delete in dbo.country and audit in CountryAudit
-
-USE [GamingGroup6]
-GO
-
-/****** Object:  Trigger [dbo].[D_TriggerCountry]    Script Date: 8/8/2021 1:06:17 AM ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-
-CREATE TRIGGER [dbo].[D_TriggerCountry] 
-   ON  [dbo].[Country] 
-   AFTER DELETE
-AS
-BEGIN
-  
-    DECLARE @CountryID INT
-
-	SELECT @CountryID = CountryID FROM deleted
-
-    INSERT INTO dbo.CountryAudit
-           (CountryID, CountryName, Continent, Operation, UserName, SystemName, UpdatedOn)
-  SELECT CountryID, CountryName, Continent, 'Deleted', SUSER_SNAME(), HOST_NAME(), GETDATE() 
-  FROM  dbo.Country c WHERE CountryID = @CountryID 
-  
-END
-GO
-
-ALTER TABLE [dbo].[Country] ENABLE TRIGGER [D_TriggerCountry]
-GO
--- set up Schema
 
 -- Create Table
+CREATE TABLE Country
+(
+	CountryID TINYINT PRIMARY KEY,
+	CountryName VARCHAR(50) NULL
+)
 
+CREATE TABLE Calendar
+(
+	DateID VARCHAR(50) NOT NULL PRIMARY KEY,
+	Date DATE NOT NULL,
+	Day TINYINT NOT NULL,
+	Month TINYINT NOT NULL,
+	Year INT NOT NULL
+)
+
+CREATE TABLE Membership
+(
+	MembershipID TINYINT PRIMARY KEY,
+	Membership VARCHAR(50) NOT NULL,
+	Cost MONEY NOT NULL
+)
+
+
+CREATE TABLE UserInfo
+(
+	UserID VARCHAR(50) NOT NULL PRIMARY KEY,
+	UserName VARCHAR(50) NOT NULL,
+	RegisteredDateID VARCHAR(50) FOREIGN KEY REFERENCES Calendar(DateID),
+	RegisterDate DATE NOT NULL,
+	CountryName VARCHAR(50) NULL,
+	MembershipID TINYINT FOREIGN KEY REFERENCES Membership(MembershipID),
+	Email VARCHAR(50) NULL,
+	Age TINYINT NULL,
+	Gender VARCHAR(50) NULL
+);
+
+-- Script mới
+
+
+CREATE TABLE Transactions(
+	[SessionID] varchar(50) NOT NULL PRIMARY KEY,
+	[UserID] varchar(50) NOT NULL FOREIGN KEY REFERENCES UserInfo(UserID),
+	[CountryID] tinyint NULL FOREIGN KEY REFERENCES Country(CountryID),
+	[StartDateID] varchar(50) NOT NULL FOREIGN KEY REFERENCES Calendar(DateID),
+	[DC_StartDate] date NOT NULL,
+	[DC_StartTimestamp] int NOT NULL,
+	[DC_EndTimestamp] int NOT NULL,
+	[DC_CashSpend] money NULL,
+	[DC_CountImpression] tinyint NULL,
+	[DC_eCPM] money NULL,
+	[OS] varchar(50) NULL,
+	[OsVersion] varchar(50) NULL
+);
+-- Load datetime information into Calendar Table
+DECLARE @StartDate  date = '20210101';
+
+DECLARE @CutoffDate date = DATEADD(DAY, -1, DATEADD(YEAR, 2, @StartDate));
+
+;WITH seq(n) AS 
+(
+  SELECT 0 UNION ALL SELECT n + 1 FROM seq
+  WHERE n < DATEDIFF(DAY, @StartDate, @CutoffDate)
+),
+d(d) AS 
+(
+  SELECT DATEADD(DAY, n, @StartDate) FROM seq
+),
+src AS
+(
+  SELECT
+    DateID          = CONVERT(date, d),
+	TheDate         = CONVERT(date, d),
+    TheDay          = CONVERT(TINYINT, DATEPART(DAY,       d)),
+    TheMonth        = CONVERT(TINYINT, DATEPART(MONTH,     d)),
+    TheYear         = CONVERT(INT, DATEPART(YEAR,      d))
+  FROM d
+)
+INSERT INTO Calendar(DateID, Date, Day, Month, Year)
+SELECT FORMAT (DateID, 'yyyyMMdd') as DateID, TheDate, TheDay,
+TheMonth, TheYear FROM src
+  ORDER BY TheDate
+  OPTION (MAXRECURSION 0);
 -- Create Agent Job / Schedule
 
 -- Create Stored Procedure
