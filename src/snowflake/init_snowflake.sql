@@ -143,7 +143,7 @@ ON TRANSACTIONS.USERID = A.USERID
 -- Set up stage and Snowpipe
 CREATE FILE FORMAT PIPE_DELIM
 TYPE = CSV
-FIELD_DELIMITER = '|'
+FIELD_DELIMITER = ','
 FIELD_OPTIONALLY_ENCLOSED_BY = '"'
 SKIP_HEADER = 1
 DATE_FORMAT = 'YYYY-MM-DD';
@@ -163,7 +163,7 @@ COPY INTO @PROJECT_STAGE/UNLOAD/ FROM DIM_USER;
 COPY INTO @PROJECT_STAGE/UNLOAD/ FROM FACT_TRANSACTIONS;
 
 ---- Get data from stage to local
-GET @PROJECT_STAGE/UNLOAD/<file name> file://C:\Users\HUYNGUYEN\gaming-project\resources\work-folder;
+--GET @PROJECT_STAGE/UNLOAD/<file name> file://C:\Users\HUYNGUYEN\gaming-project\resources\work-folder;
 -- Task
 USE DATABASE GAMINGGROUP6;
 CREATE TASK update_users_list
