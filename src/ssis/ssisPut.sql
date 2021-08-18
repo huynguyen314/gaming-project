@@ -27,9 +27,7 @@ TRUNCATE TABLE COUNTRY;
 TRUNCATE TABLE CALENDAR;
 TRUNCATE TABLE TRANSACTIONS;
 
-REMOVE @project_stage/upload/UserInfoSnowflake.csv.gz;
-REMOVE @project_stage/upload/TransactionsSnowflake.csv.gz;
-
+REMOVE @project_stage/upload/;
 
 
 
