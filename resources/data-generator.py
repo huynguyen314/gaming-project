@@ -105,12 +105,12 @@ def create_empty_table():
         writer.writeheader() 
 
     with open(country_path, 'w', newline='') as countryfile:
-        fieldnames = ['CountryId', 'CountryName']
+        fieldnames = ['CountryID', 'CountryName']
         writer = csv.DictWriter(countryfile, fieldnames=fieldnames)
         writer.writeheader()
 
     with open(country_snowflake, 'w', newline='') as countryfile:
-        fieldnames = ['CountryId', 'CountryName']
+        fieldnames = ['CountryID', 'CountryName']
         writer = csv.DictWriter(countryfile, fieldnames=fieldnames)
         writer.writeheader()
 
