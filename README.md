@@ -38,17 +38,31 @@ Load .CSV files from data-snowflake folder up to Snowflake stage with SSIS using
 
 # How to setup
 1. Login into MSSQL and run [init_mssql.sql](./src/mssql/init_mssql.sql)
+
 2. Authen SnowSQL
+
 Install SnowSQL
+
 Open .config file (C:/User/localname/.snowsql/config)
+
 Name the connecion [connection.example] as you want
+
 Edit content (account name, username, password, warehouse, dbname, schemaname
+
 Run [init_snowflake.sql](./src/mssql/init_snowfalke.sql)
+
 4. Generate data
+
 Open CMD and run command:pip install -r requirements.txt(project folder) to install package
+
 Run [data-generator.py] (./resources/data-generator.py)
+
 5. Run SSIS solution:
+
 Reset all connections in connection managers to match your file paths and your database server
+
 Open the last task *Data to Snowflake*, choose Process > Executable > click (...) to choose [snowPut.bat] (./src/ssis/snowPut.bat)
+
 Open [ssisPut.sql] (./src/ssis/ssisPut.sql) and edit local csv file path  in (.gaming-project/resources/data-snowflake)
+
 7. Open Power Bi and connect to Snowflake with you account
