@@ -14,7 +14,7 @@ Building the data pipeline to solve the business problem
 
 2. Create 4 .CSV files UserInfo, Membership, Country, Transactions from Raw flat file and stored in work-folder
 
-3. Design a data pipeline and illustrate the pipline with Drawio
+3. Design a data pipeline and illustrate the pipeline with Drawio
 ![architectural-design-data-pipeline](https://user-images.githubusercontent.com/88389982/129834819-2fbc26f1-62fe-4361-b124-bdd1449995a6.jpg)
 
 4. Ingest data from flat file
@@ -43,21 +43,21 @@ Load .CSV files from data-snowflake folder up to Snowflake stage with SSIS using
 # How to setup
 1. Login into MSSQL and run [init_mssql.sql](./src/mssql/init_mssql.sql)
 
-2. Authen SnowSQL
+2. Authentication SnowSQL Client
 
 Install SnowSQL
 
 Open .config file (C:/User/localname/.snowsql/config)
 
-Name the connecion [connection.example] as you want
+Name the connection [connection.example] as you want
 
-Edit content (account name, username, password, warehouse, dbname, schemaname
+Edit content (account name, username, password, warehouse, dbname, schemaname)
 
 Run [init_snowflake.sql](./src/mssql/init_snowfalke.sql)
 
 3. Generate data
 
-Open CMD and run command:pip install -r requirements.txt(project folder) to install package
+Open CMD and run command:pip install -r requirements.txt(./resources/requirements.txt) to install package
 
 Run [data-generator.py] (./resources/data-generator.py)
 
@@ -67,6 +67,6 @@ Reset all connections in connection managers to match your file paths and your d
 
 Open the last task *Data to Snowflake*, choose Process > Executable > click (...) to choose [snowPut.bat] (./src/ssis/snowPut.bat)
 
-Open [ssisPut.sql] (./src/ssis/ssisPut.sql) and edit local csv file path  in (.gaming-project/resources/data-snowflake)
+Open [ssisPut.sql] (./src/ssis/ssisPut.sql) and edit local csv file path  in (./gaming-project/resources/data-snowflake)
 
-5. Open Power Bi and connect to Snowflake with you account
+5. Open Power Bi and connect to Snowflake with your account
