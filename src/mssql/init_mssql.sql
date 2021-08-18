@@ -1,11 +1,15 @@
+-- Create Database
+CREATE DATABASE GamingGroup6;
 
 -- Create Table
+USE DATABASE GamingGroup6;
+GO
+
 CREATE TABLE Country
 (
 	CountryID TINYINT NOT NULL PRIMARY KEY,
 	CountryName VARCHAR(50) NULL
-
-)
+);
 
 CREATE TABLE Calendar
 (
@@ -14,15 +18,14 @@ CREATE TABLE Calendar
 	Day TINYINT NOT NULL,
 	Month TINYINT NOT NULL,
 	Year INT NOT NULL
-)
+);
 
 CREATE TABLE Membership
 (
 	MembershipID TINYINT NOT NULL PRIMARY KEY,
 	Membership VARCHAR(50) NOT NULL,
 	Cost MONEY NOT NULL
-)
-
+);
 
 CREATE TABLE UserInfo
 (
@@ -38,7 +41,6 @@ CREATE TABLE UserInfo
 	CONSTRAINT FK_DATEID FOREIGN KEY(RegisteredDateID) REFERENCES Calendar(DateID),
 	CONSTRAINT FK_MEMBERSHIPID FOREIGN KEY(MembershipID) REFERENCES Membership(MembershipID)
 );
-
 
 CREATE TABLE Transactions(
 	SessionID VARCHAR(50) NOT NULL PRIMARY KEY,
@@ -57,6 +59,7 @@ CREATE TABLE Transactions(
 	CONSTRAINT FK_COUNTRYID FOREIGN KEY(CountryID) REFERENCES Country(CountryID),
 	CONSTRAINT FK_SDATEID FOREIGN KEY(StartDateID) REFERENCES Calendar(DateID)
 );
+
 -- Load datetime information into Calendar Table
 DECLARE @StartDate  date = '20210101';
 
@@ -86,7 +89,6 @@ SELECT FORMAT (DateID, 'yyyyMMdd') as DateID, TheDate, TheDay,
 TheMonth, TheYear FROM src
   ORDER BY TheDate
   OPTION (MAXRECURSION 0);
-
 
 -- Create Agent Job / Schedule
 
