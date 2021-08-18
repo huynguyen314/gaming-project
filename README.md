@@ -1,6 +1,7 @@
 # Decsription of this project
 
 *Domain: Gaming*
+
 Business problem: Analyse user retention and income maximization of a mobile game which was launched on 1st Jan 2021 and available on Apps Store, Google play. Revenue of the game is based on 3 major source: downloading fees, ads display and cash spending on the game.
 
 # Purpose
@@ -17,6 +18,7 @@ Building the data pipeline to solve the business problem
 ![architectural-design-data-pipeline](https://user-images.githubusercontent.com/88389982/129834819-2fbc26f1-62fe-4361-b124-bdd1449995a6.jpg)
 
 4. Ingest data from flat file
+
 Create data stage in MSSQL
 ![database_model_in_mssql](https://user-images.githubusercontent.com/88389982/129836709-37cdc32f-3fe8-4bc1-96d3-81a3967c5c60.jpg)
 
@@ -25,7 +27,9 @@ Build a SSIS solution to do ETL into stage
 
 
 5. Load data onto Snowflake cloud
+
 Export data in MSSQL to .csv files and store in data-snowflake folder
+
 Load .CSV files from data-snowflake folder up to Snowflake stage with SSIS using snowsql
 
 6. Design dimensional model on Snowflake
@@ -51,13 +55,13 @@ Edit content (account name, username, password, warehouse, dbname, schemaname
 
 Run [init_snowflake.sql](./src/mssql/init_snowfalke.sql)
 
-4. Generate data
+3. Generate data
 
 Open CMD and run command:pip install -r requirements.txt(project folder) to install package
 
 Run [data-generator.py] (./resources/data-generator.py)
 
-5. Run SSIS solution:
+4. Run SSIS solution:
 
 Reset all connections in connection managers to match your file paths and your database server
 
@@ -65,4 +69,4 @@ Open the last task *Data to Snowflake*, choose Process > Executable > click (...
 
 Open [ssisPut.sql] (./src/ssis/ssisPut.sql) and edit local csv file path  in (.gaming-project/resources/data-snowflake)
 
-7. Open Power Bi and connect to Snowflake with you account
+5. Open Power Bi and connect to Snowflake with you account
