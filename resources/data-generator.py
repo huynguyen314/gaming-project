@@ -66,8 +66,8 @@ def create_csv_user_data(record_count):
                     start_date = date.fromtimestamp(start_timestamp)
                 transaction_writer.writerow(
                     {
-                        'SessionID': user + str(random.random())[2:],
-                        'UserID': i,
+                        'SessionID': user[:5] + str(random.random())[2:],
+                        'UserID': user[:5] + str(i),
                         'UserName': user,
                         'CountryID': countryID,
                         'CountryName': country,
