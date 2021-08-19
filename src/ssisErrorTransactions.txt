@@ -1,0 +1,1 @@
+CountryName,SessionID,UserID,StartDateID,StartDate,StartTimestamp,EndTimestamp,CashSpend,CountImpression,eCPM,OS,OsVersion,DC_StartDate,DC_StartTimestamp,DC_EndTimestamp,DC_CashSpend,DC_CountImpression,DC_eCPM,CountryID,ErrorCode,ErrorColumn
