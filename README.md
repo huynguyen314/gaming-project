@@ -72,7 +72,7 @@ Open [ssisPut.sql] (./src/ssis/ssisPut.sql) and edit local csv file path  in (./
 5. Open Power Bi and connect to Snowflake with your account
 
 
-#GROUP 8: WORKING ON THE PROJECT FOR FURTHER IMPROVEMENTS 
+# GROUP 8: WORKING ON THE PROJECT FOR FURTHER IMPROVEMENTS 
 
 1. Generating data work
 Modify and clean code for flexible folder path
