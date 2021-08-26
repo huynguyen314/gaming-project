@@ -1,162 +1,219 @@
+/*** Sript to run before creating database ***/
+---VARIABLES
+DECLARE @identity as nvarchar(50) = N'FSOFT.FPT.VN\KhangNHN';
+DECLARE @password as nvarchar(50) = N'***********';
+DECLARE @youremail as nvarchar(50) ='nguyenhoangnhatkhang@gmail.com';
+DECLARE @youremailsever as nvarchar(50) ='stmp.gmail.com';
+--------------------------------------------------------------------
+USE [msdb]
+--* DROP Everything *
+-- Database 
+DROP DATABASE IF EXISTS GamingGroup6;
+-- Credentials
+IF EXISTS (SELECT * FROM sys.credentials WHERE name = 'RunDemoProxy')
+    DROP CREDENTIAL RunDemoProxy
+-- Mail account
+DECLARE @Id binary(16)
+SELECT @Id = account_id FROM msdb.dbo.sysmail_account WHERE (name = N'FakeAccount')
+IF (@Id IS NOT NULL)
+BEGIN
+    EXEC msdb.dbo.sysmail_delete_account_sp  @Id
+END
+-- Mail Profile
+SELECT @Id = profile_id FROM msdb.dbo.sysmail_profile WHERE (name = N'FakeProfile')
+IF (@Id IS NOT NULL)
+BEGIN
+    EXEC msdb.dbo.sysmail_delete_profile_sp  @Id
+END
+-- Environment 
+IF EXISTS (SELECT * FROM SSISDB.catalog.environments WHERE name = N'DemoEnvironment')
+    EXEC [SSISDB].[catalog].[delete_environment] @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog'
+-- Project 
+IF EXISTS (SELECT * FROM SSISDB.catalog.projects WHERE name = N'SSIS_GamingGroup6')
+    EXEC [SSISDB].[catalog].[delete_project] @project_name=N'SSIS_GamingGroup6', @folder_name=N'demo_Catalog'
+-- Catalog
+IF EXISTS (SELECT * FROM SSISDB.catalog.folders WHERE name = N'demo_Catalog')
+    EXEC [SSISDB].[catalog].[delete_folder] @folder_name=N'demo_Catalog'
+-- Proxy
+SELECT @Id = proxy_id FROM msdb.dbo.sysproxies WHERE (name = N'DemoProxyProject02')
+IF (@Id IS NOT NULL)
+BEGIN
+    EXEC msdb.dbo.sp_delete_proxy @Id
+END
+-- Operator
+IF EXISTS (SELECT * FROM msdb.dbo.sysoperators WHERE name = N'FakeOperator02')
+BEGIN
+    EXEC msdb.dbo.sp_delete_operator @name=N'FakeOperator02'
+END
+-- Alert 
+IF EXISTS (SELECT * FROM msdb.dbo.sysalerts WHERE name = N'FakeAlert02')
+BEGIN
+    EXEC msdb.dbo.sp_delete_alert @name=N'FakeAlert02'
+END
+-- Job
+DECLARE @jobId binary(16)
+SELECT @jobId = job_id FROM msdb.dbo.sysjobs WHERE (name = N'RunDemoProject02')
+IF (@jobId IS NOT NULL)
+BEGIN
+    EXEC msdb.dbo.sp_delete_job @jobId
+END
+--------------------------------------------------------------------
+-- CREATE CREDENTIALS
+USE [master];
+EXEC ('CREATE CREDENTIAL [RunDemoProxy] WITH IDENTITY = ''' + @identity + ''',
+SECRET = ''' + @password + ''';')
+--------------------------------------------------------------------
+-- CREATE DATABASE MAIL 
+-- Mail account
+USE [msdb];
+EXECUTE msdb.dbo.sysmail_add_account_sp  
+    @account_name = 'FakeAccount',  
+    @description = 'Mail account for use by all database users.',  
+    @email_address = @youremail,  
+    @replyto_address = @youremail,  
+    @display_name = 'Demo Automated Mailer',  
+    @mailserver_name = @youremailsever ;  
+-- Mail profile  
+EXECUTE msdb.dbo.sysmail_add_profile_sp  
+    @profile_name = 'FakeProfile',  
+    @description = 'Profile used for administrative mail.' ; 
+-- Add account to the profile  
+EXECUTE msdb.dbo.sysmail_add_profileaccount_sp  
+    @profile_name = 'FakeProfile',  
+    @account_name = 'FakeAccount',  
+    @sequence_number =1 ;  
+-- Grant access to the profile to all users in the msdb database  
+EXECUTE msdb.dbo.sysmail_add_principalprofile_sp  
+    @profile_name = 'FakeProfile',  
+    @principal_name = 'public',  
+    @is_default = 1 ;  
+--------------------------------------------------------------
+-- CREATE catalog folder, default name = demo_catalog
+EXEC [SSISDB].[catalog].[create_folder] @folder_name=N'demo_Catalog';
+--------------------------------------------------------------
+-- CREATE Environment and variable, user need to modIFy by themselves 
+EXEC [SSISDB].[catalog].[create_environment] @environment_name=N'DemoEnvironment', @environment_description=N'', @folder_name=N'demo_Catalog'
+DECLARE @var sql_variant = N'temp'
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'PythonPath', @sensitive=False, @description=N'Path WHERE you have your python.exe', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'ServerName', @sensitive=False, @description=N'Your Server Name', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'SnowflakePath', @sensitive=False, @description=N'Path WHERE you store snowflake source file', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'WorkingFolderPath', @sensitive=False, @description=N'Path to working folder', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
+---------------------------------------------------------------
+-- CREATE Proxy
+USE [msdb];
+EXEC msdb.dbo.sp_add_proxy @proxy_name=N'DemoProxyProject02',@credential_name=N'RunDemoProxy', 
+		@enabled=1;
+EXEC msdb.dbo.sp_grant_proxy_to_subsystem @proxy_name=N'DemoProxyProject02', @subsystem_id=11
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'DatabaseMailUserRole'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'db_accessadmin'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'db_backupoperator'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'db_datareader'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'db_datawriter'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'db_ddladmin'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'db_denydatareader'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'db_denydatawriter'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'db_owner'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'db_securityadmin'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'db_ssisadmin'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'db_ssisltduser'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'db_ssisoperator'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'dc_admin'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'dc_operator'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'dc_proxy'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'PolicyAdministratorRole'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'public'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'ServerGroupAdministratorRole'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'ServerGroupReaderRole'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'SQLAgentOperatorRole'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'SQLAgentReaderRole'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'SQLAgentUserRole'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'TargetServersRole'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'UtilityCMRReader'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'UtilityIMRReader'
+EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_role=N'UtilityIMRWriter'
+-------------------------------------------------------------------------------
+-- CREATE Operator
+USE [msdb];
+EXEC msdb.dbo.sp_add_operator @name=N'FakeOperator02', 
+		@enabled=1, 
+		@pager_days=0, 
+		@email_address=@youremail, 
+		@pager_address=@youremail
+-------------------------------------------------------------------------------
+/******* CREATE DATABASE AND TABLE *******/
 -- Create Database
 CREATE DATABASE GamingGroup6;
-
--- Create Table
-USE DATABASE GamingGroup6;
 GO
+USE GamingGroup6;
+GO
+-- Create schema 
+CREATE SCHEMA GameBI;
+GO
+-- Create Table
 
-CREATE TABLE Country
+
+CREATE TABLE GameBI.CountryDetails
 (
 	CountryID TINYINT NOT NULL PRIMARY KEY,
-	CountryName VARCHAR(50) NULL
-);
-
-CREATE TABLE Calendar
-(
-	DateID VARCHAR(50) NOT NULL PRIMARY KEY,
-	Date DATE NOT NULL,
-	Day TINYINT NOT NULL,
-	Month TINYINT NOT NULL,
-	Year INT NOT NULL
-);
-
-CREATE TABLE Membership
-(
-	MembershipID TINYINT NOT NULL PRIMARY KEY,
-	Membership VARCHAR(50) NOT NULL,
-	Cost MONEY NOT NULL
-);
-
-CREATE TABLE UserInfo
-(
-	UserID VARCHAR(50) NOT NULL PRIMARY KEY,
-	UserName VARCHAR(50) NOT NULL,
-	RegisteredDateID VARCHAR(50),
-	RegisterDate DATE NOT NULL,
 	CountryName VARCHAR(50) NULL,
-	MembershipID TINYINT NOT NULL,
-	Email VARCHAR(50) NULL,
-	Age TINYINT NULL,
-	Gender VARCHAR(50) NULL,
-	CONSTRAINT FK_DATEID FOREIGN KEY(RegisteredDateID) REFERENCES Calendar(DateID),
-	CONSTRAINT FK_MEMBERSHIPID FOREIGN KEY(MembershipID) REFERENCES Membership(MembershipID)
+	ZipCode INT NOT NULL,
+	Region VARCHAR(50), 
+	ModifedDate DATE NOT NULL
 );
 
-CREATE TABLE Transactions(
-	SessionID VARCHAR(50) NOT NULL PRIMARY KEY,
-	UserID VARCHAR(50) NOT NULL,
+CREATE TABLE GameBI.GameDetails
+(
+	GameID INT NOT NULL PRIMARY KEY,
+	GameName VARCHAR(50) NOT NULL,
+	GamePlatform VARCHAR(50) NOT NULL,
+	GameCategory VARCHAR(50) NOT NULL,
+	ReleasedDate DATE NOT NULL,
+	PaymentType VARCHAR(10) NOT NULL,
+	ModifedDate DATE NOT NULL
+);
+
+CREATE TABLE GameBI.UserInfo
+(
+	UserID INT NOT NULL PRIMARY KEY,
+	UserName VARCHAR(50) NOT NULL,
+	Age TINYINT NOT NULL,
+	Gender VARCHAR(10) NOT NULL,
+	EmailAddress VARCHAR(50) NULL,
+	Income INT NOT NULL,
+	MarritalStatus VARCHAR(10),
+	RegisteredDate DATE NOT NULL,
+	LastOnline DATE NOT NULL,
+	ModifedDate DATE NOT NULL
+);
+
+CREATE TABLE GameBI.Transactions(
+	SessionID INT NOT NULL,
+	UserID INT NOT NULL,
 	CountryID TINYINT NOT NULL,
-	StartDateID VARCHAR(50) NOT NULL,
-	StartDate DATE NOT NULL,
-	StartTimestamp INT NOT NULL,
-	EndTimestamp INT NOT NULL,
-	CashSpend MONEY NULL,
-	CountImpression TINYINT NULL,
-	eCPM MONEY NULL,
-	OS VARCHAR(50) NULL,
-	OsVersion VARCHAR(50) NULL,
-	CONSTRAINT FK_USERID FOREIGN KEY(UserID) REFERENCES UserInfo(UserID),
-	CONSTRAINT FK_COUNTRYID FOREIGN KEY(CountryID) REFERENCES Country(CountryID),
-	CONSTRAINT FK_SDATEID FOREIGN KEY(StartDateID) REFERENCES Calendar(DateID)
+	GameID INT NOT NULL,
+	DateOfRecord DATE NOT NULL,
+	IncomeByAds MONEY NOT NULL,
+	IncomeByPurchase MONEY NOT NULL,
+	IncomeBoughtIngameItems MONEY NOT NULL,
+	ModifedDate DATE NOT NULL,
+	CONSTRAINT PK_GameTransaction PRIMARY KEY (SessionID),
+	CONSTRAINT FK_User FOREIGN KEY (UserID) REFERENCES GameBI.UserInfo(UserID),
+	CONSTRAINT FK_Country FOREIGN KEY (CountryID) REFERENCES GameBI.CountryDetails(CountryID),
+	CONSTRAINT FK_Game FOREIGN KEY (GameID) REFERENCES GameBI.GameDetails(GameID)
 );
 
--- Load datetime information into Calendar Table
-DECLARE @StartDate  date = '20210101';
+/********************CREATE LOGEVENT***************************/
+CREATE TABLE GameBI.EventLog(
+	[IDlog] [int] IDENTITY(1,1) NOT NULL,
+	[Package] [nvarchar] (100) NOT NULL,
+	[Task] [nvarchar] (100) NOT NULL,
+	[EventDescription] [nvarchar] (max) NOT NULL,
+	[Timelog] [date] NULL,
+);
+/********************CREATE VIEW***************************/
 
-DECLARE @CutoffDate date = DATEADD(DAY, -1, DATEADD(YEAR, 2, @StartDate));
 
-;WITH seq(n) AS 
-(
-  SELECT 0 UNION ALL SELECT n + 1 FROM seq
-  WHERE n < DATEDIFF(DAY, @StartDate, @CutoffDate)
-),
-d(d) AS 
-(
-  SELECT DATEADD(DAY, n, @StartDate) FROM seq
-),
-src AS
-(
-  SELECT
-    DateID = CONVERT(date, d),
-	TheDate = CONVERT(date, d),
-    TheDay = CONVERT(TINYINT, DATEPART(DAY, d)),
-    TheMonth = CONVERT(TINYINT, DATEPART(MONTH, d)),
-    TheYear = CONVERT(INT, DATEPART(YEAR, d))
-  FROM d
-)
-INSERT INTO Calendar(DateID, Date, Day, Month, Year)
-SELECT FORMAT (DateID, 'yyyyMMdd') as DateID, TheDate, TheDay,
-TheMonth, TheYear FROM src
-  ORDER BY TheDate
-  OPTION (MAXRECURSION 0);
 
--- Create Agent Job / Schedule
 
-USE [msdb]
-GO
 
-/****** Object:  Job [Run SSIS Package]    Script Date: 8/18/2021 8:05:36 PM ******/
-BEGIN TRANSACTION
-DECLARE @ReturnCode INT
-SELECT @ReturnCode = 0
-/****** Object:  JobCategory [[Uncategorized (Local)]]    Script Date: 8/18/2021 8:05:36 PM ******/
-IF NOT EXISTS (SELECT name FROM msdb.dbo.syscategories WHERE name=N'[Uncategorized (Local)]' AND category_class=1)
-BEGIN
-EXEC @ReturnCode = msdb.dbo.sp_add_category @class=N'JOB', @type=N'LOCAL', @name=N'[Uncategorized (Local)]'
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 
-END
-
-DECLARE @jobId BINARY(16)
-EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'Run SSIS Package', 
-		@enabled=1, 
-		@notify_level_eventlog=0, 
-		@notify_level_email=0, 
-		@notify_level_netsend=0, 
-		@notify_level_page=0, 
-		@delete_level=0, 
-		@description=N'No description available.', 
-		@category_name=N'[Uncategorized (Local)]', 
-		@owner_login_name=N'FSOFT.FPT.VN\LinhTK9', @job_id = @jobId OUTPUT
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
-/****** Object:  Step [Run SSIS Package]    Script Date: 8/18/2021 8:05:36 PM ******/
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'Run SSIS Package', 
-		@step_id=1, 
-		@cmdexec_success_code=0, 
-		@on_success_action=1, 
-		@on_success_step_id=0, 
-		@on_fail_action=2, 
-		@on_fail_step_id=0, 
-		@retry_attempts=0, 
-		@retry_interval=0, 
-		@os_run_priority=0, @subsystem=N'SSIS', 
-		@command=N'/ISSERVER "\"\SSISDB\GamingGroup6\SSIS_GamingGroup6\Package.dtsx\"" /SERVER CVP00204888A /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1 /Par "\"$ServerOption::SYNCHRONIZED(Boolean)\"";True /CALLERINFO SQLAGENT /REPORTING E', 
-		@database_name=N'master', 
-		@flags=0
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
-EXEC @ReturnCode = msdb.dbo.sp_update_job @job_id = @jobId, @start_step_id = 1
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
-EXEC @ReturnCode = msdb.dbo.sp_add_jobschedule @job_id=@jobId, @name=N'SSISSchedule', 
-		@enabled=1, 
-		@freq_type=4, 
-		@freq_interval=1, 
-		@freq_subday_type=8, 
-		@freq_subday_interval=1, 
-		@freq_relative_interval=0, 
-		@freq_recurrence_factor=0, 
-		@active_start_date=20210818, 
-		@active_end_date=99991231, 
-		@active_start_time=0, 
-		@active_end_time=235959, 
-		@schedule_uid=N'786217bc-cacc-4b32-a11d-9dcc865f6a7c'
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
-EXEC @ReturnCode = msdb.dbo.sp_add_jobserver @job_id = @jobId, @server_name = N'(local)'
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
-COMMIT TRANSACTION
-GOTO EndSave
-QuitWithRollback:
-    IF (@@TRANCOUNT > 0) ROLLBACK TRANSACTION
-EndSave:
-GO
-
--- Create Stored Procedure
