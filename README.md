@@ -70,3 +70,28 @@ Open the last task *Data to Snowflake*, choose Process > Executable > click (...
 Open [ssisPut.sql] (./src/ssis/ssisPut.sql) and edit local csv file path  in (./gaming-project/resources/data-snowflake)
 
 5. Open Power Bi and connect to Snowflake with your account
+
+
+#GROUP 8: WORKING ON THE PROJECT FOR FURTHER IMPROVEMENTS 
+
+1. Generating data work
+Modify and clean code for flexible folder path
+
+2. SSIS solution work
+
+- Modify parameters, environment
+- Create Scripting task
+- Load 1 big csv into tables in SQL
+- Add/update data flow
+- Add Eventlog Table to event handler
+- Run python script to connect directly from SQL to snowflake based on dataframe pandas, may take longer time than bulkload and no snowpipe needed
+- Add stand-alone package sql script task to auto generate jobs/schedule/email/proxy
+
+3. Snowflake work
+- Create stream, stage, tasks, procedures
+- Build new data model
+
+
+
+4. PBI work
+Schedule to update data
