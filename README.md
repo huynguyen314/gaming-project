@@ -95,3 +95,4 @@ Modify and clean code for flexible folder path
 
 4. PBI work
 - Schedule to update data
+- Modify dashboard and use tooltips
