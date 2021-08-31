@@ -1,241 +1,112 @@
 import csv
 import os
 import random
-import time
-from datetime import datetime, timezone, date
+from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
+from distutils.dir_util import copy_tree
 from faker import Faker
-
-# Set up reference
-COUNTRIES = ['United States', 'Japan', 'Taiwan', 'Australia', 'South Korea',
-             'Hong Kong', 'United Kingdom', 'Canada', 'New Zealand', 'Norway',
-             'Germany', 'China', 'Singapore', 'Switzerland', 'South Africa',
-             'Denmark', 'Sweden', 'France', 'United Arab Emirates', 'Ireland'
-]
-
-eCPM = {country : 5 + round(10*random.random(), 2) for country in COUNTRIES}
-BEGIN_TIMESTAMP = 1609459200 # January 1, 2021 12:00:00 AM
-NOW_TIME = round(datetime.now().timestamp())
-RECORD_COUNT = 1000
-OLD_USERS = int(0.3*RECORD_COUNT)
-fake = Faker()
-
-dir_path = os.path.dirname(os.path.abspath(__file__))
-time_stamp = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
-
-# Set up file path
-old_user_path = f'{dir_path}\\work-folder\\OldUserInfo.csv'
-user_table_path = f'{dir_path}\\work-folder\\UserInfo.csv'
-user_transaction_path = f'{dir_path}\\work-folder\\Transactions.csv'
-country_path = f'{dir_path}\\work-folder\\Country.csv'
-membership_path = f'{dir_path}\\work-folder\\Membership.csv'
-transaction_table_path = f'{dir_path}\\raw-folder\\DataFromUsers{time_stamp}.csv'
-user_snowflake = f'{dir_path}\\data-snowflake\\UserInfoSnowflake.csv'
-user_transaction_snowflake = f'{dir_path}\\data-snowflake\\TransactionsSnowflake.csv'
-country_snowflake = f'{dir_path}\\data-snowflake\\CountrySnowflake.csv'
-membership_snowflake= f'{dir_path}\\data-snowflake\\MembershipSnowflake.csv'
-calendar_snowflake = f'{dir_path}\\data-snowflake\\CalendarSnowflake.csv'
-
-def find_countryID(CountryName):
-    for i in range(len(COUNTRIES)):
-        if CountryName == COUNTRIES[i]:
-            return i+1
-
-def create_old_user_data(old_users):
-    # Create old user transaction
-    if not os.path.isfile(old_user_path):
-        with open(old_user_path, 'w', newline='') as oldUserFile:
-            fieldnames = ['UserID','UserName', 'RegisterTimestamp', 'RegisteredDateID', 'RegisterDate','CountryName',
-                        'Membership', 'Email', 'Age', 'Gender']
-            writer = csv.DictWriter(oldUserFile, fieldnames=fieldnames)
-            writer.writeheader()
-    else:
-        with open(old_user_path, 'r') as oldUserFile:
-            fieldnames = ['UserID','UserName', 'RegisterTimestamp', 'RegisteredDateID', 'RegisterDate','CountryName',
-                        'Membership', 'Email', 'Age', 'Gender']
-            reader = csv.DictReader(oldUserFile, fieldnames=fieldnames)
-            header = reader.__next__()
-            old_users_info = list(reader)
-            for _ in range(old_users):
-                old_user = random.choice(old_users_info)
-                with open(transaction_table_path, 'a', newline='') as csvfile:
-                    fieldnames = ['SessionID','UserID', 'UserName', 'CountryID','CountryName', 'Age', 'Email', 'Gender',
-                                    'MembershipID', 'Membership', 'Cost','RegisterDate', 'RegisteredDateID',
-                                    'StartDateID' , 'StartDate', 'StartTimestamp','EndTimestamp', 
-                                    'CashSpend', 'CountImpression', 'eCPM','OS', 'OsVersion']
-                    transaction_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                    register_timestamp = int(old_user['RegisterTimestamp'])
-                    for j in range(random.randint(10, 50)):
-                        start_timestamp = register_timestamp + random.randint(1, NOW_TIME - register_timestamp)
-                        start_date = date.fromtimestamp(start_timestamp)
-                        transaction_writer.writerow(
-                            {
-                                'SessionID': old_user['UserName'][:5] + str(random.random())[2:],
-                                'UserID': old_user['UserID'],
-                                'UserName': old_user['UserName'],
-                                'CountryID': find_countryID(old_user['CountryName']),
-                                'CountryName': old_user['CountryName'],
-                                'Age': old_user['Age'],
-                                'Email': old_user['Email'],
-                                'Gender': old_user['Gender'],
-                                'RegisterDate': old_user['RegisterDate'],
-                                'RegisteredDateID': old_user['RegisteredDateID'],
-                                'MembershipID': 1 if old_user['Membership'] == 'Basic' else 2,
-                                'Membership': old_user['Membership'],
-                                'Cost': 0 if old_user['Membership'] == 'Basic' else 4.99,
-                                'StartDateID': start_date.strftime("%Y%m%d"),  
-                                'StartDate': date.fromtimestamp(start_timestamp),
-                                'StartTimestamp': start_timestamp,
-                                'EndTimestamp': start_timestamp + random.randint(300, 4800),
-                                'CashSpend': random.choice([0, round(3 * random.random(), 2)]),
-                                'CountImpression': 0 if old_user['Membership'] == 'Professional' else random.randint(3, 10),
-                                'eCPM': eCPM[old_user['CountryName']],
-                                'OS': random.choice(['Android', 'iOS']),
-                                'OsVersion': random.choice([10, 11, 12])
-                            }
-                        )
-
-
-def create_new_user_data(record_count):
-    # Create user data
-    for i in range(1000*NOW_TIME, 1000*NOW_TIME + record_count):
-        user = fake.user_name()
-        userID = user[:5] + str(i)
-        email = user + '@' + fake.free_email_domain()
-        age = random.randint(12, 60)
-        gender = random.choice(['Male', 'Female', 'Unknown'])
-        register_timestamp = random.randint(BEGIN_TIMESTAMP, NOW_TIME)
-        register_date = date.fromtimestamp(register_timestamp)
-        register_dateID = register_date.strftime("%Y%m%d")
-        countryID = random.randint(1, len(COUNTRIES))
-        country = COUNTRIES[countryID-1]
-        membershipID = random.randint(1, 2)
-        membership = ['Basic', 'Professional'][membershipID-1]
-        os_name = random.choice(['Android', 'iOS'])
-        os_version = random.randint(8, 12) if os_name =='Android' else random.randint(10, 12)
-
-        with open(old_user_path, 'a', newline='') as oldUserFile:
-            fieldnames = ['UserID','UserName', 'RegisterTimestamp', 'RegisteredDateID', 'RegisterDate','CountryName',
-                        'Membership', 'Email', 'Age', 'Gender']
-            writer = csv.DictWriter(oldUserFile, fieldnames=fieldnames)
+ 
+## DATA PATH ##
+os.makedirs('Working-Folder', exist_ok=True)
+os.makedirs('Raw-Folder', exist_ok=True)
+current_path = os.getcwd()
+raw_path = current_path + r'\Raw-Folder'
+work_path = current_path+r'\Working-Folder'
+# VARIABLE DECLARATIONS
+country_list = [[1, 'United States'], [2, 'Japan'], [3, 'Taiwan'], [4, 'Australia'],
+                [5, 'South Korea'], [6, 'Hong Kong'], [7, 'United Kingdom'], [8, 'Canada'], 
+                [9, 'New Zealand'], [10, 'Norway'], [11, 'Germany'], [12, 'China'],
+                [13, 'Singapore'], [14, 'Switzerland'], [15, 'South Africa'], [16, 'Denmark'], 
+                [17, 'Sweden'], [18, 'France'], [19, 'United Arab Emirates'], [20, 'Ireland']] #20 id 
+game_category = ['Action games', 'Action-adventure games', 'Adventure games',
+                'Role-playing games', 'Simulation games', 'Strategy games',
+                'Sports games', 'Puzzle games', 'Idle games'] #9 id
+game_platform = ['SmartPhone/Tablet', 'PC', 'PlayStation', 'Xbox', 'Nitendo Switch']
+game_paymethod = ['Free', 'Purchase']
+record_count = 8000
+fake = Faker('en')
+time_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#time_stamp = datetime.now()
+def createRawData(RECORD_COUNT):
+    with open(f'{raw_path}\RawData.csv', 'w', newline='') as csvfile:
+        fieldnames = ['RecordID', 'DateOfRecord', 'UserID', 'FullName', 'Age', 'Gender', 'EmailAddress', 
+                      'Income', 'MarritalStatus', 'CountryID', 'CountryName', 'Region','ZipCode', 
+                      'RegisteredDate', 'LastOnline', 'GameID', 'GameName', 'GamePlatForm', 
+                      'GameCategories', 'ReleaseDate', 'PaymentType', 'IncomeByAds', 'IncomeByPurchase', 
+                      'IncomeBoughtIngameItems', 'ModifiedDate']
+        start_release_date = date(year=2015, month=1, day=1)
+        start_record_date = date(year=2017, month=1, day=1)
+        end_record_date = date(year=2020, month=12, day=31)
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        ##loop
+        for i in range(RECORD_COUNT):
+            tmp_age = fake.random_int(5,60)
+            #condition for parentalStatus
+            if tmp_age >=18:
+                tmp_income = fake.random_int(10000,200000,5000)
+                tmp_parent = fake.random_element(elements=['Married', 'Single'])
+            else:
+                tmp_parent = 'Single'
+                tmp_income = fake.random_int(1000,12000,500)
+            tmp_record_date = fake.date_between(start_date=start_record_date, end_date=end_record_date)
+            tmp_released_date = fake.date_between(start_date=start_release_date, end_date=tmp_record_date - relativedelta(months=20))
+            tmp_registered_date = fake.date_between(start_date=tmp_released_date, end_date=tmp_record_date - relativedelta(months=5))
+            tmp_lastonline_date = fake.date_between(start_date=tmp_record_date - relativedelta(months=6), end_date=tmp_record_date - relativedelta(months=1))
+            tmp_country = fake.random_element(elements=country_list)
+            # assign region to country
+            if tmp_country[0] in [2, 3, 5, 6, 12, 13, 19]:
+                tmp_region = 'Asia'
+            elif tmp_country[0] == 1:
+                tmp_region = 'North America'
+            elif tmp_country[0] == 4:
+                tmp_region = 'Australia'
+            else:
+                tmp_region = 'Europe'
+            tmp_payment = fake.random_element(elements=game_paymethod)
+            if tmp_payment == 'Free': 
+                tmp_payads = round(random.uniform(10,500),2) # max/min income: 500/100
+                tmp_paypurchase = 0.00
+            else:
+                tmp_payads = 0.00
+                tmp_paypurchase = round(random.uniform(100,1000),2) # max/min income: 1000/100
             writer.writerow(
                 {
-                    'UserID': userID,
-                    'UserName': user,
-                    'RegisterTimestamp': register_timestamp,
-                    'RegisteredDateID': register_dateID,
-                    'RegisterDate': register_date,
-                    'CountryName': country,
-                    'Membership': membership,
-                    'Email': email,
-                    'Age': age,
-                    'Gender': gender
+                    'RecordID': fake.random_int(1,92123),
+                    'DateOfRecord': tmp_record_date,
+                    'UserID': fake.random_int(15618,17013),
+                    'FullName': fake.name(),
+                    'Age': tmp_age,
+                    'Gender': fake.random_element(elements=['Male', 'Female']),
+                    'EmailAddress': fake.free_email(),
+                    'Income': tmp_income,
+                    'MarritalStatus': tmp_parent,
+                    'CountryID': tmp_country[0],
+                    'CountryName': tmp_country[1],
+                    'Region': tmp_region,
+                    'ZipCode': fake.zipcode(),
+                    'RegisteredDate': tmp_registered_date,
+                    'LastOnline': tmp_lastonline_date,
+                    'GameID': fake.random_int(20198,21896),
+                    'GameName': fake.bothify(text=fake.company()+' ???_####'),
+                    'GamePlatForm': fake.random_element(elements=game_platform),
+                    'GameCategories': fake.random_element(elements=game_category),
+                    'ReleaseDate': tmp_released_date,
+                    'PaymentType': tmp_payment,
+                    'IncomeByAds': tmp_payads,
+                    'IncomeByPurchase': tmp_paypurchase,
+                    'IncomeBoughtIngameItems': round(random.uniform(10,5000),2),
+                    'ModifiedDate': time_stamp
                 }
             )
-
-        # Create user transaction data
-        with open(transaction_table_path, 'a', newline='') as csvfile:
-            fieldnames = ['SessionID','UserID', 'UserName', 'CountryID','CountryName', 'Age', 'Email', 'Gender',
-                            'MembershipID', 'Membership', 'Cost','RegisterDate', 'RegisteredDateID',
-                            'StartDateID' , 'StartDate', 'StartTimestamp','EndTimestamp', 
-                             'CashSpend', 'CountImpression', 'eCPM','OS', 'OsVersion']
-            transaction_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            for j in range(random.randint(10, 100)):
-                start_timestamp = register_timestamp + random.randint(1, NOW_TIME - register_timestamp)
-                start_date = date.fromtimestamp(start_timestamp)
-                if j == 0:
-                    start_timestamp = register_timestamp
-                    start_date = date.fromtimestamp(start_timestamp)
-                transaction_writer.writerow(
-                    {
-                        'SessionID': user[:5] + str(random.random())[2:],
-                        'UserID': userID,
-                        'UserName': user,
-                        'CountryID': countryID,
-                        'CountryName': country,
-                        'Age': age,
-                        'Email': email,
-                        'Gender': gender,
-                        'RegisterDate': register_date,
-                        'RegisteredDateID': register_dateID,
-                        'MembershipID': membershipID,
-                        'Membership': membership,
-                        'Cost': 0 if membership == 'Basic' else 4.99,
-                        'StartDateID': start_date.strftime("%Y%m%d"),  
-                        'StartDate': date.fromtimestamp(start_timestamp),
-                        'StartTimestamp': start_timestamp,
-                        'EndTimestamp': start_timestamp + random.randint(300, 4800),
-                        'CashSpend': random.choice([0, round(3 * random.random(), 2)]),
-                        'CountImpression': 0 if membership == 'Professional' else random.randint(3, 10),
-                        'eCPM': eCPM[country],
-                        'OS': os_name,
-                        'OsVersion': os_version
-                    }
-                )
-
-def create_empty_table():
-    with open(transaction_table_path, 'a', newline='') as csvfile:
-                    fieldnames = ['SessionID','UserID', 'UserName', 'CountryID','CountryName', 'Age', 'Email', 'Gender',
-                                    'MembershipID', 'Membership', 'Cost','RegisterDate', 'RegisteredDateID',
-                                    'StartDateID' , 'StartDate', 'StartTimestamp','EndTimestamp', 
-                                    'CashSpend', 'CountImpression', 'eCPM','OS', 'OsVersion']
-                    transaction_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                    transaction_writer.writeheader()
-
-    with open(user_table_path, 'w', newline='') as userfile:
-        fieldnames = ['UserID','UserName','RegisteredDateID', 'RegisterDate','CountryName',
-                      'Membership', 'Email', 'Age', 'Gender']
-        writer = csv.DictWriter(userfile, fieldnames=fieldnames)
-        writer.writeheader()
-
-    with open(user_snowflake, 'w', newline='') as userfile:
-        fieldnames = ['UserID','UserName','RegisteredDateID', 'RegisterDate','CountryName',
-                      'MembershipID', 'Email', 'Age', 'Gender']
-        writer = csv.DictWriter(userfile, fieldnames=fieldnames)
-        writer.writeheader() 
-
-    with open(country_path, 'w', newline='') as countryfile:
-        fieldnames = ['CountryID', 'CountryName']
-        writer = csv.DictWriter(countryfile, fieldnames=fieldnames)
-        writer.writeheader()
-
-    with open(country_snowflake, 'w', newline='') as countryfile:
-        fieldnames = ['CountryID', 'CountryName']
-        writer = csv.DictWriter(countryfile, fieldnames=fieldnames)
-        writer.writeheader()
-
-    with open(membership_path, 'w', newline='') as memberfile:
-        fieldnames = ['MembershipID', 'Membership', 'Cost']
-        writer = csv.DictWriter(memberfile, fieldnames=fieldnames)
-        writer.writeheader()
-
-    with open(membership_snowflake, 'w', newline='') as memberfile:
-        fieldnames = ['MembershipID', 'Membership', 'Cost']
-        writer = csv.DictWriter(memberfile, fieldnames=fieldnames)
-        writer.writeheader()
-
-    with open(user_transaction_path, 'w', newline='') as transactionfile:
-        fieldnames = ['SessionID', 'UserID', 'CountryName', 'StartDateID', 'StartDate', 'StartTimestamp', 'EndTimestamp',
-                      'CashSpend', 'CountImpression','eCPM','OS', 'OsVersion']
-        writer = csv.DictWriter(transactionfile, fieldnames=fieldnames)
-        writer.writeheader()
-
-    with open(user_transaction_snowflake, 'w', newline='') as transactionfile:
-        fieldnames = ['SessionID', 'UserID', 'CountryID', 'StartDateID', 'StartDate', 'StartTimestamp', 'EndTimestamp',
-                      'CashSpend', 'CountImpression','eCPM','OS', 'OsVersion']
-        writer = csv.DictWriter(transactionfile, fieldnames=fieldnames)
-        writer.writeheader()
-
-    with open(calendar_snowflake, 'w', newline='') as memberfile:
-        fieldnames = ['DateID', 'Date', 'Day', 'Month', 'Year']
-        writer = csv.DictWriter(memberfile, fieldnames=fieldnames)
-        writer.writeheader()
-    
-
+    return 
+ 
 if __name__ == '__main__':
     t1 = datetime.now()
     print('Creating data...')
-    create_empty_table()
-    create_old_user_data(OLD_USERS)
-    create_new_user_data(RECORD_COUNT-OLD_USERS)
+    createRawData(record_count)
+    print('Done Generating Data...')
+    print('Copy Data to Working Folder')
+    copy_tree('./Raw-folder', './Working-folder')
     t2 = datetime.now()
     print(f"Done in time {t2-t1}")

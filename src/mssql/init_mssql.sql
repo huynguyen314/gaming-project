@@ -4,8 +4,13 @@ DECLARE @identity as nvarchar(50) = N'FSOFT.FPT.VN\KhangNHN';
 DECLARE @password as nvarchar(50) = N'***********';
 DECLARE @youremail as nvarchar(50) ='nguyenhoangnhatkhang@gmail.com';
 DECLARE @youremailsever as nvarchar(50) ='stmp.gmail.com';
+-- for environment
+DECLARE @pythonpath sql_variant = N'C:\Users\KhangNHN\AppData\Local\Programs\Python\Python39';
+DECLARE @snowflakepath sql_variant = N'E:\training_document_data2021\week456-miniproject\project02\debug_folder\python_debug\Working-Folder';
+DECLARE @snowsqlconfig sql_variant = N'C:\Users\KhangNHN\.snowsql';
+DECLARE @workingpath sql_variant = N'E:\training_document_data2021\week456-miniproject\project02\debug_folder\python_debug\Working-Folder';
 --------------------------------------------------------------------
-USE [msdb]
+USE [master]
 --* DROP Everything *
 -- Database 
 DROP DATABASE IF EXISTS GamingGroup6;
@@ -45,6 +50,10 @@ IF EXISTS (SELECT * FROM msdb.dbo.sysoperators WHERE name = N'FakeOperator02')
 BEGIN
     EXEC msdb.dbo.sp_delete_operator @name=N'FakeOperator02'
 END
+IF EXISTS (SELECT * FROM msdb.dbo.sysoperators WHERE name = N'FakeOperator_Backup02')
+BEGIN
+    EXEC msdb.dbo.sp_delete_operator @name=N'FakeOperator_Backup02'
+END
 -- Alert 
 IF EXISTS (SELECT * FROM msdb.dbo.sysalerts WHERE name = N'FakeAlert02')
 BEGIN
@@ -53,6 +62,11 @@ END
 -- Job
 DECLARE @jobId binary(16)
 SELECT @jobId = job_id FROM msdb.dbo.sysjobs WHERE (name = N'RunDemoProject02')
+IF (@jobId IS NOT NULL)
+BEGIN
+    EXEC msdb.dbo.sp_delete_job @jobId
+END
+SELECT @jobId = job_id FROM msdb.dbo.sysjobs WHERE (name = N'RunBackupProject02')
 IF (@jobId IS NOT NULL)
 BEGIN
     EXEC msdb.dbo.sp_delete_job @jobId
@@ -93,11 +107,11 @@ EXEC [SSISDB].[catalog].[create_folder] @folder_name=N'demo_Catalog';
 --------------------------------------------------------------
 -- CREATE Environment and variable, user need to modIFy by themselves 
 EXEC [SSISDB].[catalog].[create_environment] @environment_name=N'DemoEnvironment', @environment_description=N'', @folder_name=N'demo_Catalog'
-DECLARE @var sql_variant = N'temp'
-EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'PythonPath', @sensitive=False, @description=N'Path WHERE you have your python.exe', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
-EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'ServerName', @sensitive=False, @description=N'Your Server Name', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
-EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'SnowflakePath', @sensitive=False, @description=N'Path WHERE you store snowflake source file', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
-EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'WorkingFolderPath', @sensitive=False, @description=N'Path to working folder', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'PythonPath', @sensitive=False, @description=N'Path WHERE you have your python.exe', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@pythonpath, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'ServerName', @sensitive=False, @description=N'Your Server Name', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@@SERVERNAME, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'SnowflakePath', @sensitive=False, @description=N'Path WHERE you store snowflake source file', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@snowflakepath, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'WorkingFolderPath', @sensitive=False, @description=N'Path to working folder', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@workingpath, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'SnowSQLPath', @sensitive=False, @description=N'Path to snow sql config contained folder', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@snowsqlconfig, @data_type=N'String';
 ---------------------------------------------------------------
 -- CREATE Proxy
 USE [msdb];
@@ -139,6 +153,11 @@ EXEC msdb.dbo.sp_add_operator @name=N'FakeOperator02',
 		@pager_days=0, 
 		@email_address=@youremail, 
 		@pager_address=@youremail
+EXEC msdb.dbo.sp_add_operator @name=N'FakeOperator_Backup02', 
+		@enabled=1, 
+		@pager_days=0, 
+		@email_address=@youremail, 
+		@pager_address=@youremail
 -------------------------------------------------------------------------------
 /******* CREATE DATABASE AND TABLE *******/
 -- Create Database
@@ -154,48 +173,49 @@ GO
 
 CREATE TABLE GameBI.CountryDetails
 (
-	CountryID TINYINT NOT NULL PRIMARY KEY,
-	CountryName VARCHAR(50) NULL,
+	CountryID INT NOT NULL PRIMARY KEY,
+	CountryName NVARCHAR(50) NULL,
 	ZipCode INT NOT NULL,
-	Region VARCHAR(50), 
-	ModifedDate DATE NOT NULL
+	Region NVARCHAR(50), 
+	ModifiedDate DATETIME NOT NULL
 );
 
 CREATE TABLE GameBI.GameDetails
 (
 	GameID INT NOT NULL PRIMARY KEY,
-	GameName VARCHAR(50) NOT NULL,
-	GamePlatform VARCHAR(50) NOT NULL,
-	GameCategory VARCHAR(50) NOT NULL,
+	GameName NVARCHAR(50) NOT NULL,
+	GamePlatform NVARCHAR(50) NOT NULL,
+	GameCategory NVARCHAR(50) NOT NULL,
 	ReleasedDate DATE NOT NULL,
-	PaymentType VARCHAR(10) NOT NULL,
-	ModifedDate DATE NOT NULL
+	PaymentType NVARCHAR(10) NOT NULL,
+	ModifiedDate DATETIME NOT NULL
 );
 
 CREATE TABLE GameBI.UserInfo
 (
 	UserID INT NOT NULL PRIMARY KEY,
-	UserName VARCHAR(50) NOT NULL,
-	Age TINYINT NOT NULL,
-	Gender VARCHAR(10) NOT NULL,
-	EmailAddress VARCHAR(50) NULL,
+	UserName NVARCHAR(50) NOT NULL,
+	Age SMALLINT NOT NULL,
+	Gender NVARCHAR(10) NOT NULL,
+	EmailAddress NVARCHAR(50) NULL,
 	Income INT NOT NULL,
-	MarritalStatus VARCHAR(10),
-	RegisteredDate DATE NOT NULL,
-	LastOnline DATE NOT NULL,
-	ModifedDate DATE NOT NULL
+	MarritalStatus NVARCHAR(10),
+	ModifiedDate DATETIME NOT NULL
 );
 
-CREATE TABLE GameBI.Transactions(
+CREATE TABLE GameBI.Transactions
+(
 	SessionID INT NOT NULL,
 	UserID INT NOT NULL,
-	CountryID TINYINT NOT NULL,
+	CountryID INT NOT NULL,
 	GameID INT NOT NULL,
 	DateOfRecord DATE NOT NULL,
+	RegisteredDate DATE NOT NULL,
+	LastOnline DATE NOT NULL,
 	IncomeByAds MONEY NOT NULL,
 	IncomeByPurchase MONEY NOT NULL,
 	IncomeBoughtIngameItems MONEY NOT NULL,
-	ModifedDate DATE NOT NULL,
+	ModifiedDate DATETIME NOT NULL,
 	CONSTRAINT PK_GameTransaction PRIMARY KEY (SessionID),
 	CONSTRAINT FK_User FOREIGN KEY (UserID) REFERENCES GameBI.UserInfo(UserID),
 	CONSTRAINT FK_Country FOREIGN KEY (CountryID) REFERENCES GameBI.CountryDetails(CountryID),
@@ -211,6 +231,8 @@ CREATE TABLE GameBI.EventLog(
 	[Timelog] [date] NULL,
 );
 /********************CREATE VIEW***************************/
+
+
 
 
 
