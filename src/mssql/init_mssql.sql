@@ -5,7 +5,7 @@ DECLARE @password as nvarchar(50) = N'***********';
 DECLARE @youremail as nvarchar(50) ='nguyenhoangnhatkhang@gmail.com';
 DECLARE @youremailsever as nvarchar(50) ='stmp.gmail.com';
 --------------------------------------------------------------------
-USE [msdb]
+USE [master]
 --* DROP Everything *
 -- Database 
 DROP DATABASE IF EXISTS GamingGroup6;
@@ -57,6 +57,11 @@ IF (@jobId IS NOT NULL)
 BEGIN
     EXEC msdb.dbo.sp_delete_job @jobId
 END
+SELECT @jobId = job_id FROM msdb.dbo.sysjobs WHERE (name = N'RunBackupProject02')
+IF (@jobId IS NOT NULL)
+BEGIN
+    EXEC msdb.dbo.sp_delete_job @jobId
+END
 --------------------------------------------------------------------
 -- CREATE CREDENTIALS
 USE [master];
@@ -98,6 +103,7 @@ EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'PythonPat
 EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'ServerName', @sensitive=False, @description=N'Your Server Name', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
 EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'SnowflakePath', @sensitive=False, @description=N'Path WHERE you store snowflake source file', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
 EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'WorkingFolderPath', @sensitive=False, @description=N'Path to working folder', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'SnowSQLPath', @sensitive=False, @description=N'Path to snow sql config contained folder', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
 ---------------------------------------------------------------
 -- CREATE Proxy
 USE [msdb];
@@ -154,48 +160,49 @@ GO
 
 CREATE TABLE GameBI.CountryDetails
 (
-	CountryID TINYINT NOT NULL PRIMARY KEY,
-	CountryName VARCHAR(50) NULL,
+	CountryID INT NOT NULL PRIMARY KEY,
+	CountryName NVARCHAR(50) NULL,
 	ZipCode INT NOT NULL,
-	Region VARCHAR(50), 
-	ModifedDate DATE NOT NULL
+	Region NVARCHAR(50), 
+	ModifiedDate DATETIME NOT NULL
 );
 
 CREATE TABLE GameBI.GameDetails
 (
 	GameID INT NOT NULL PRIMARY KEY,
-	GameName VARCHAR(50) NOT NULL,
-	GamePlatform VARCHAR(50) NOT NULL,
-	GameCategory VARCHAR(50) NOT NULL,
+	GameName NVARCHAR(50) NOT NULL,
+	GamePlatform NVARCHAR(50) NOT NULL,
+	GameCategory NVARCHAR(50) NOT NULL,
 	ReleasedDate DATE NOT NULL,
-	PaymentType VARCHAR(10) NOT NULL,
-	ModifedDate DATE NOT NULL
+	PaymentType NVARCHAR(10) NOT NULL,
+	ModifiedDate DATETIME NOT NULL
 );
 
 CREATE TABLE GameBI.UserInfo
 (
 	UserID INT NOT NULL PRIMARY KEY,
-	UserName VARCHAR(50) NOT NULL,
-	Age TINYINT NOT NULL,
-	Gender VARCHAR(10) NOT NULL,
-	EmailAddress VARCHAR(50) NULL,
+	UserName NVARCHAR(50) NOT NULL,
+	Age SMALLINT NOT NULL,
+	Gender NVARCHAR(10) NOT NULL,
+	EmailAddress NVARCHAR(50) NULL,
 	Income INT NOT NULL,
-	MarritalStatus VARCHAR(10),
+	MarritalStatus NVARCHAR(10),
 	RegisteredDate DATE NOT NULL,
 	LastOnline DATE NOT NULL,
-	ModifedDate DATE NOT NULL
+	ModifiedDate DATETIME NOT NULL
 );
 
-CREATE TABLE GameBI.Transactions(
+CREATE TABLE GameBI.Transactions
+(
 	SessionID INT NOT NULL,
 	UserID INT NOT NULL,
-	CountryID TINYINT NOT NULL,
+	CountryID INT NOT NULL,
 	GameID INT NOT NULL,
 	DateOfRecord DATE NOT NULL,
 	IncomeByAds MONEY NOT NULL,
 	IncomeByPurchase MONEY NOT NULL,
 	IncomeBoughtIngameItems MONEY NOT NULL,
-	ModifedDate DATE NOT NULL,
+	ModifiedDate DATETIME NOT NULL,
 	CONSTRAINT PK_GameTransaction PRIMARY KEY (SessionID),
 	CONSTRAINT FK_User FOREIGN KEY (UserID) REFERENCES GameBI.UserInfo(UserID),
 	CONSTRAINT FK_Country FOREIGN KEY (CountryID) REFERENCES GameBI.CountryDetails(CountryID),
@@ -211,6 +218,8 @@ CREATE TABLE GameBI.EventLog(
 	[Timelog] [date] NULL,
 );
 /********************CREATE VIEW***************************/
+
+
 
 
 
