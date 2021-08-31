@@ -4,6 +4,11 @@ DECLARE @identity as nvarchar(50) = N'FSOFT.FPT.VN\KhangNHN';
 DECLARE @password as nvarchar(50) = N'***********';
 DECLARE @youremail as nvarchar(50) ='nguyenhoangnhatkhang@gmail.com';
 DECLARE @youremailsever as nvarchar(50) ='stmp.gmail.com';
+-- for environment
+DECLARE @pythonpath sql_variant = N'C:\Users\KhangNHN\AppData\Local\Programs\Python\Python39';
+DECLARE @snowflakepath sql_variant = N'E:\training_document_data2021\week456-miniproject\project02\debug_folder\python_debug\Working-Folder';
+DECLARE @snowsqlconfig sql_variant = N'C:\Users\KhangNHN\.snowsql';
+DECLARE @workingpath sql_variant = N'E:\training_document_data2021\week456-miniproject\project02\debug_folder\python_debug\Working-Folder';
 --------------------------------------------------------------------
 USE [master]
 --* DROP Everything *
@@ -98,12 +103,11 @@ EXEC [SSISDB].[catalog].[create_folder] @folder_name=N'demo_Catalog';
 --------------------------------------------------------------
 -- CREATE Environment and variable, user need to modIFy by themselves 
 EXEC [SSISDB].[catalog].[create_environment] @environment_name=N'DemoEnvironment', @environment_description=N'', @folder_name=N'demo_Catalog'
-DECLARE @var sql_variant = N'temp'
-EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'PythonPath', @sensitive=False, @description=N'Path WHERE you have your python.exe', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
-EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'ServerName', @sensitive=False, @description=N'Your Server Name', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
-EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'SnowflakePath', @sensitive=False, @description=N'Path WHERE you store snowflake source file', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
-EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'WorkingFolderPath', @sensitive=False, @description=N'Path to working folder', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
-EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'SnowSQLPath', @sensitive=False, @description=N'Path to snow sql config contained folder', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@var, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'PythonPath', @sensitive=False, @description=N'Path WHERE you have your python.exe', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@pythonpath, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'ServerName', @sensitive=False, @description=N'Your Server Name', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@@SERVERNAME, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'SnowflakePath', @sensitive=False, @description=N'Path WHERE you store snowflake source file', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@snowflakepath, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'WorkingFolderPath', @sensitive=False, @description=N'Path to working folder', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@workingpath, @data_type=N'String';
+EXEC [SSISDB].[catalog].[create_environment_variable] @variable_name=N'SnowSQLPath', @sensitive=False, @description=N'Path to snow sql config contained folder', @environment_name=N'DemoEnvironment', @folder_name=N'demo_Catalog', @value=@snowsqlconfig, @data_type=N'String';
 ---------------------------------------------------------------
 -- CREATE Proxy
 USE [msdb];
@@ -187,8 +191,6 @@ CREATE TABLE GameBI.UserInfo
 	EmailAddress NVARCHAR(50) NULL,
 	Income INT NOT NULL,
 	MarritalStatus NVARCHAR(10),
-	RegisteredDate DATE NOT NULL,
-	LastOnline DATE NOT NULL,
 	ModifiedDate DATETIME NOT NULL
 );
 
@@ -199,6 +201,8 @@ CREATE TABLE GameBI.Transactions
 	CountryID INT NOT NULL,
 	GameID INT NOT NULL,
 	DateOfRecord DATE NOT NULL,
+	RegisteredDate DATE NOT NULL,
+	LastOnline DATE NOT NULL,
 	IncomeByAds MONEY NOT NULL,
 	IncomeByPurchase MONEY NOT NULL,
 	IncomeBoughtIngameItems MONEY NOT NULL,
