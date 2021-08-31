@@ -1,189 +1,215 @@
--- Set up Warehouse
-CREATE OR REPLACE WAREHOUSE GAMING_WH WITH
-WAREHOUSE_SIZE = 'SMALL'
-MAX_CLUSTER_COUNT = 2
-MIN_CLUSTER_COUNT = 1
-AUTO_SUSPEND = 600 -- 600s
-AUTO_RESUME = TRUE
-INITIALLY_SUSPENDED = FALSE
-COMMENT = 'This warehouse is used for gaming project demo.';
--- Set up Database
-CREATE DATABASE GAMINGGROUP6;
-USE DATABASE GAMINGGROUP6;
--- set up table
-CREATE TABLE Country
-(
-	CountryID TINYINT PRIMARY KEY,
-	CountryName VARCHAR(50) NULL
-)
-;
+		-- Set up Warehouse
+		CREATE OR REPLACE WAREHOUSE FA_PROJECT02_CLOUDDW WITH
+			WAREHOUSE_SIZE = 'XSMALL' 
+			WAREHOUSE_TYPE = 'STANDARD' 
+			AUTO_SUSPEND = 300 
+			AUTO_RESUME = TRUE;
+		/******* CREATE DATABASE AND TABLE *******/
+		-- Create Database
+		CREATE OR REPLACE DATABASE FA_PROJECT02_DB;
 
-CREATE TABLE Calendar
-(
-	DateID VARCHAR(50) NOT NULL PRIMARY KEY,
-	Date DATE NOT NULL,
-	Day TINYINT NOT NULL,
-	Month TINYINT NOT NULL,
-	Year INT NOT NULL
-)
-;
+		-- Create schema 
+		CREATE OR REPLACE SCHEMA GameBI;
 
-CREATE TABLE Membership
-(
-	MembershipID TINYINT PRIMARY KEY,
-	Membership VARCHAR(50) NOT NULL,
-	Cost FLOAT NOT NULL
-);
+		-- Create Table
 
-CREATE TABLE UserInfo
-(
-	UserID VARCHAR(50) NOT NULL PRIMARY KEY,
-	UserName VARCHAR(50) NOT NULL,
-	RegisteredDateID VARCHAR(50) FOREIGN KEY REFERENCES Calendar(DateID),
-	RegisterDate DATE NOT NULL,
-	CountryName VARCHAR(50) NULL,
-	MembershipID TINYINT FOREIGN KEY REFERENCES Membership(MembershipID),
-	Email VARCHAR(50) NULL,
-	Age TINYINT NULL,
-	Gender VARCHAR(50) NULL
-);
+		CREATE OR REPLACE TABLE GameBI.CountryDetails
+		(
+			CountryID TINYINT NOT NULL PRIMARY KEY,
+			CountryName VARCHAR(50) NULL,
+			ZipCode INT NOT NULL,
+			Region VARCHAR(50) NOT NULL, 
+			ModifiedDate DATETIME NOT NULL
+		);
 
-CREATE TABLE Transactions(
-	SessionID VARCHAR(50) NOT NULL PRIMARY KEY,
-	UserID VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES UserInfo(UserID),
-	CountryID TINYINT NULL FOREIGN KEY REFERENCES Country(CountryID),
-	StartDateID VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES Calendar(DateID),
-	StartDate DATE NOT NULL,
-	StartTimestamp INT NOT NULL,
-	EndTimestamp INT NOT NULL,
-	CashSpend FLOAT NULL,
-	CountImpression TINYINT NULL,
-	eCPM FLOAT NULL,
-	OS VARCHAR(50) NULL,
-	OsVersion VARCHAR(50) NULL
-);
+		CREATE OR REPLACE TABLE GameBI.GameDetails
+		(
+			GameID INT NOT NULL PRIMARY KEY,
+			GameName VARCHAR(50) NOT NULL,
+			GamePlatform VARCHAR(50) NOT NULL,
+			GameCategory VARCHAR(50) NOT NULL,
+			ReleasedDate DATE NOT NULL,
+			PaymentType VARCHAR(10) NOT NULL,
+			ModifiedDate DATETIME NOT NULL
+		);
 
-CREATE TABLE DIM_USER
-(
-USERID VARCHAR(50) NOT NULL PRIMARY KEY,
-USERNAME VARCHAR(50) NOT NULL,
-EMAIL VARCHAR(50),
-AGE TINYINT,
-GENDER VARCHAR(50)
-);
+		CREATE OR REPLACE TABLE GameBI.UserInfo
+		(
+			UserID INT NOT NULL PRIMARY KEY,
+			UserName VARCHAR(50) NOT NULL,
+			Age TINYINT NOT NULL,
+			Gender VARCHAR(10) NOT NULL,
+			EmailAddress VARCHAR(50) NULL,
+			Income INT NOT NULL,
+			MarritalStatus VARCHAR(10),
+			ModifiedDate DATETIME NOT NULL
+		);
 
-CREATE TABLE DIM_MEMBERSHIP
-(
-MEMBERSHIPID TINYINT NOT NULL PRIMARY KEY,
-MEMBERSHIP VARCHAR(50) NOT NULL,
-COST FLOAT NOT NULL
-);
+		CREATE OR REPLACE TABLE GameBI.Transactions
+		(
+			SessionID INT NOT NULL,
+			UserID INT NOT NULL,
+			CountryID TINYINT NOT NULL,
+			GameID INT NOT NULL,
+			DateOfRecord DATE NOT NULL,
+			RegisteredDate DATE NOT NULL,
+			LastOnline DATE NOT NULL,
+			IncomeByAds NUMBER NOT NULL,
+			IncomeByPurchase NUMBER NOT NULL,
+			IncomeBoughtIngameItems NUMBER NOT NULL,
+			ModifiedDate DATETIME NOT NULL,
+			CONSTRAINT PK_GameTransaction PRIMARY KEY (SessionID),
+			CONSTRAINT FK_User FOREIGN KEY (UserID) REFERENCES GameBI.UserInfo(UserID),
+			CONSTRAINT FK_Country FOREIGN KEY (CountryID) REFERENCES GameBI.CountryDetails(CountryID),
+			CONSTRAINT FK_Game FOREIGN KEY (GameID) REFERENCES GameBI.GameDetails(GameID)
+		);
+	
+		-- CREATE DIM/FACT TABLES
 
-CREATE TABLE DIM_COUNTRY
-(
-COUNTRYID TINYINT NOT NULL PRIMARY KEY,
-COUNTRYNAME VARCHAR(50)
-);
+		CREATE OR REPLACE TABLE GameBI.Dim_Country
+		(	CountryKey INT IDENTITY(1,1) PRIMARY KEY,
+			CountryID TINYINT NOT NULL,
+			CountryName VARCHAR(50) NULL,
+			ZipCode INT NOT NULL,
+			Region VARCHAR(50));
 
-CREATE TABLE DIM_CALENDAR
-(
-DATEID VARCHAR(50) NOT NULL PRIMARY KEY,
-DATE DATE NOT NULL,
-DAY TINYINT NOT NULL,
-MONTH TINYINT NOT NULL,
-YEAR TINYINT NOT NULL
-);
+		CREATE OR REPLACE TABLE GameBI.Dim_Game
+		(	GameKey INT IDENTITY(1,1) PRIMARY KEY,
+			GameID INT NOT NULL,
+			GameName VARCHAR(50) NOT NULL,
+			GamePlatform VARCHAR(50) NOT NULL,
+			GameCategory VARCHAR(50) NOT NULL,
+			ReleasedDate DATE NOT NULL,
+			PaymentType VARCHAR(10) NOT NULL
+		);
 
-CREATE TABLE FACT_TRANSACTIONS
-(
-USERID VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES DIM_USER(USERID),
-COUNTRYID TINYINT NOT NULL FOREIGN KEY REFERENCES DIM_COUNTRY(COUNTRYID),
-STARTDATEID VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES DIM_CALENDAR(DATEID),
-STARTDATE DATE NOT NULL,
-REGISTEREDDATEID VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES DIM_CALENDAR(DATEID),
-REGISTERDATE DATE NOT NULL,
-PLAYINGDURATION INT NOT NULL,
-MEMBERSHIPID TINYINT NOT NULL FOREIGN KEY REFERENCES DIM_MEMBERSHIP(MEMBERSHIPID),
-MEMBERSHIPCOST FLOAT,
-CASHSPEND FLOAT,
-COUNTIMPRESSION TINYINT,
-UNITCPM FLOAT,
-ERNEDFROMAD FLOAT,
-TOTALINCOME FLOAT
-);
+		CREATE OR REPLACE TABLE GameBI.Dim_User
+		(	UserKey INT IDENTITY(1,1) PRIMARY KEY,
+			UserID INT NOT NULL,
+			UserName VARCHAR(50) NOT NULL,
+			Age TINYINT NOT NULL,
+			Gender VARCHAR(10) NOT NULL,
+			EmailAddress VARCHAR(50) NULL,
+			Income INT NOT NULL,
+			MarritalStatus VARCHAR(10)
+		);
 
-CREATE VIEW V_FACT (USERID, COUNTRYID, STARTDATEID, STARTDATE, REGISTEREDDATEID, REGISTERDATE, PLAYINGDURATION, MEMBERSHIPID, COST, CASHSPEND, COUNTIMPRESSION, UNIT_CPM, ERNEDFROMAD, TOTALINCOME)
-AS 
-SELECT TRANSACTIONS.USERID,
-       COUNTRYID,
-       STARTDATEID,
-       STARTDATE,
-       A.REGISTEREDDATEID,
-       A.REGISTERDATE,
-       (ENDTIMESTAMP - STARTTIMESTAMP) AS PLAYINGDURATION,
-       A.MEMBERSHIPID,
-       A.COST,
-       CASHSPEND,
-       COUNTIMPRESSION,
-       ECPM/1000 AS UNIT_CPM,
-       (ECPM/1000)*COUNTIMPRESSION AS ERNEDFROMAD,
-       (A.COST+CASHSPEND+((ECPM/1000)*COUNTIMPRESSION)) AS TOTALINCOME
-FROM TRANSACTIONS
-LEFT JOIN 
-       (
-         SELECT USERINFO.*, MEMBERSHIP.COST
-         FROM USERINFO
-         LEFT JOIN MEMBERSHIP ON USERINFO.MEMBERSHIPID = MEMBERSHIP.MEMBERSHIPID
-       )
-         AS A
-ON TRANSACTIONS.USERID = A.USERID
-;
--- Create Trigger
+		CREATE OR REPLACE TABLE GameBI.Dim_Date (
+		   DATEKEY        int NOT NULL
+		   ,DATE          DATE        NOT NULL
+		   ,DAYOFMONTH       SMALLINT    NOT NULL
+		   ,WEEKDAYNAME    VARCHAR(10) NOT NULL
+		   ,WEEK     SMALLINT    NOT NULL
+		   ,DAYOFWEEK      VARCHAR(9)  NOT NULL
+		   ,MONTH            SMALLINT    NOT NULL
+		   ,MONTHNAME       CHAR(3)     NOT NULL
+		   ,QUARTER          SMALLINT NOT NULL
+		  ,YEAR             SMALLINT    NOT NULL,
+		  CONSTRAINT PK_DateDim PRIMARY KEY (DATEKEY)
+		)
+		AS
+		  WITH CTE_MY_DATE AS (
+			SELECT DATEADD(DAY, SEQ4(), '2017-01-01') AS DATEKEY
+			  FROM TABLE(GENERATOR(ROWCOUNT=>2000))  
+		  )
+		  SELECT TO_CHAR(DATE(DATEKEY),'YYYYMMDD'),
+				 DATE(DATEKEY)
+				 ,DAY(DATEKEY),
+				 DECODE(DAYNAME(DATEKEY),
+			'Mon','Monday','Tue','Tuesday',
+			'Wed','Wednesday','Thu','Thursday',
+			'Fri','Friday','Sat','Saturday',
+				  'Sun','Sunday')
+				 ,WEEKOFYEAR(DATEKEY)        
+				 ,DAYOFWEEK(DATEKEY)
+				 ,MONTH(DATEKEY)
+				,MONTHNAME(DATEKEY),
+				 QUARTER(DATEKEY)
+				,YEAR(DATEKEY)
+			FROM CTE_MY_DATE;		
 
--- Set up stage and Snowpipe
-CREATE FILE FORMAT PIPE_DELIM
-TYPE = CSV
-FIELD_DELIMITER = ','
-FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-SKIP_HEADER = 1
-DATE_FORMAT = 'YYYY-MM-DD';
---- Creat stage to store files
-CREATE STAGE PROJECT_STAGE
-FILE_FORMAT = PIPE_DELIM;
 
---- Create pipe to load data from stage to tables
-CREATE PIPE CALENDAR_PIPE AS COPY INTO CALENDAR FROM @PROJECT_STAGE/UPLOAD/CalendarSnowflake.csv.gz;
-CREATE PIPE COUNTRY_PIPE AS COPY INTO COUNTRY FROM @PROJECT_STAGE/UPLOAD/CountrySnowflake.csv.gz;
-CREATE PIPE MEMBERSHIP_PIPE AS COPY INTO MEMBERSHIP FROM @PROJECT_STAGE/UPLOAD/MembershipSnowflake.csv.gz;
-CREATE PIPE USER_PIPE AS COPY INTO USERINFO FROM @PROJECT_STAGE/UPLOAD/UserInfoSnowflake.csv.gz;
-CREATE PIPE TRANSACTIONS_PIPE AS COPY INTO TRANSACTIONS FROM @PROJECT_STAGE/UPLOAD/TransactionsSnowflake.csv.gz;
+		CREATE OR REPLACE TABLE GameBI.Fact_Transactions(
+			DateKey INT NOT NULL,
+			UserKey INT NOT NULL,
+			CountryKey INT NOT NULL,
+			GameKey INT NOT NULL,
+			DateOfRecord DATE NOT NULL,
+			RegisteredDate DATE NOT NULL,
+			IncomeByAds FLOAT NOT NULL,
+			IncomeByPurchase FLOAT NOT NULL,
+			IncomeBoughtIngameItems FLOAT NOT NULL,
+			LastSeen FLOAT NOT NULL,
+			CONSTRAINT PK_GameTransaction PRIMARY KEY (DateKey,UserKey,CountryKey,GameKey),
+			CONSTRAINT FK_User FOREIGN KEY (UserKey) REFERENCES GameBI.Dim_User(UserKey),
+			CONSTRAINT FK_Country FOREIGN KEY (CountryKey) REFERENCES GameBI.Dim_Country(CountryKey),
+			CONSTRAINT FK_Game FOREIGN KEY (GameKey) REFERENCES GameBI.Dim_Game(GameKey),
+			CONSTRAINT FK_Date FOREIGN KEY (DateKey) REFERENCES GameBI.Dim_Date(DateKey)
+		);
+		------ CREATE INDEXES TO IMPROVE QUERY PERFORMANCE
+		ALTER TABLE Dim_User CLUSTER BY (UserKey);
+		ALTER TABLE Dim_Game CLUSTER BY (GameKey);
+		ALTER TABLE Dim_Country CLUSTER BY (CountryKey);
+		ALTER TABLE Dim_Date CLUSTER BY (DateKey);
+		ALTER TABLE Fact_Transactions CLUSTER BY (DateKey,UserKey,CountryKey,GameKey);
 
---- Unload data from stage
-COPY INTO @PROJECT_STAGE/UNLOAD/ FROM DIM_USER;
-COPY INTO @PROJECT_STAGE/UNLOAD/ FROM FACT_TRANSACTIONS;
+		---LOAD DATA STREAM
+		CREATE OR REPLACE STREAM fact_transact_stream
+		ON TABLE GameBI.Transactions;
 
----- Get data from stage to local
---GET @PROJECT_STAGE/UNLOAD/<file name> file://C:\Users\HUYNGUYEN\gaming-project\resources\work-folder;
--- Task
-USE DATABASE GAMINGGROUP6;
-CREATE TASK update_users_list
-    WAREHOUSE = GAMING_WH
-	SCHEDULE = '60 MINUTE'
-    COMMENT = 'Update the lastest user list from UserInfo'
-AS
-INSERT OVERWRITE INTO DIM_USER(USERID, USERNAME, EMAIL, AGE, GENDER)
-SELECT DISTINCT USERID, USERNAME, EMAIL, AGE, GENDER FROM USERINFO;
+		---CREATE A STORED PROCEDURE
 
-CREATE TASK update_transaction_list
-	WAREHOUSE = GAMING_WH
-	AFTER update_users_list
-	COMMENT = 'Add into FACT_TRANSACTIONS from TRANSACTIONS table after UserInfo table is updated.'
-AS 
-INSERT INTO FACT_TRANSACTIONS(USERID, COUNTRYID, STARTDATEID, STARTDATE, REGISTEREDDATEID,
-                              REGISTERDATE, PLAYINGDURATION, MEMBERSHIPID, MEMBERSHIPCOST, CASHSPEND,
-                              COUNTIMPRESSION, UNITCPM, ERNEDFROMAD, TOTALINCOME)
-SELECT * FROM V_FACT;
+		CREATE OR REPLACE PROCEDURE load_data_sp()
+		  returns string
+		  language javascript
+		  as     
+		  $$  
+		  var result;
+		  var sqlcommand0 = `TRUNCATE TABLE GameBI.Dim_Country;`;
+		  var sqlcommand1 = `TRUNCATE TABLE GameBI.Dim_Game;`;
+		  var sqlcommand2 = `TRUNCATE TABLE GameBI.Dim_User;`;
+		  var sqlcommand3= `TRUNCATE TABLE GameBI.Fact_Transactions;`;
 
-GRANT EXECUTE TASK ON ACCOUNT TO ROLE DE_ROLE;
+		  var sqlcommand4 = `INSERT INTO GameBI.Dim_Country(CountryID,CountryName,ZipCode, Region)
+		  SELECT CountryID,CountryName,ZipCode, Region FROM GameBI.CountryDetails;`;
+		  var sqlcommand5 = `INSERT INTO GameBI.Dim_Game (GameID,GameName,GamePlatform,GameCategory, ReleasedDate,PaymentType) 
+		  SELECT GameID,GameName,GamePlatform,GameCategory, ReleasedDate,PaymentType FROM GameBI.GameDetails;`;
+		  var sqlcommand6= ` INSERT INTO GameBI.Dim_User(UserID,UserName,Age,Gender,EmailAddress,Income,MarritalStatus) 
+		  SELECT UserID,UserName,Age,Gender,EmailAddress,Income,MarritalStatus FROM GameBI.UserInfo;`;
+		  var sqlcommand7 = `INSERT INTO GameBI.Fact_Transactions(DateKey,UserKey,CountryKey, GameKey,DateOfRecord,RegisteredDate,IncomeByAds, IncomeByPurchase, IncomeBoughtIngameItems,LastSeen) 
+		  SELECT DimDate.DateKey, Users.UserKey, Country.CountryKey, Game.GameKey, Transact.DateOfRecord,Transact.RegisteredDate,Transact.IncomeByAds, Transact.IncomeByPurchase,Transact.IncomeBoughtIngameItems,
+				(Transact.DateOfRecord-Transact.LastOnline) as LastSeen
+			FROM fact_transact_stream AS Transact
+			JOIN GameBI.Dim_Country AS Country ON (Transact.CountryID=Country.CountryID)
+			JOIN GameBI.Dim_Game AS Game ON (Transact.GameID=Game.GameID)
+			JOIN GameBI.Dim_User AS Users ON (Transact.UserID=Users.UserID)
+			JOIN GameBI.Dim_Date AS DimDate ON (Transact.DateOfRecord=DimDate.date)
+			WHERE transact.METADATA$ACTION = 'INSERT';`;
+
+		 try {
+			snowflake.execute({sqlText: sqlcommand0 });        
+			snowflake.execute({sqlText: sqlcommand1 });
+			snowflake.execute({sqlText: sqlcommand2 });
+			snowflake.execute({sqlText: sqlcommand3 });
+			snowflake.execute({sqlText: sqlcommand4 });
+			snowflake.execute({sqlText: sqlcommand5 });
+			snowflake.execute({sqlText: sqlcommand6 });
+			snowflake.execute({sqlText: sqlcommand7 });
+			result = "Succeeded"
+		 }
+		 catch(err) {
+		 result = "Failed" + err;
+		 }
+		 return result;
+		  $$
+		;
+
+		CREATE OR REPLACE TASK ETL_To_WH
+		WAREHOUSE = FA_PROJECT02_CLOUDDW
+		SCHEDULE = '3 MINUTE'
+		WHEN SYSTEM$STREAM_HAS_DATA('fact_transact_stream')
+		AS
+		call load_data_sp();
+		ALTER TASK ETL_To_WH RESUME;
 
 
