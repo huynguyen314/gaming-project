@@ -50,6 +50,10 @@ IF EXISTS (SELECT * FROM msdb.dbo.sysoperators WHERE name = N'FakeOperator02')
 BEGIN
     EXEC msdb.dbo.sp_delete_operator @name=N'FakeOperator02'
 END
+IF EXISTS (SELECT * FROM msdb.dbo.sysoperators WHERE name = N'FakeOperator_Backup02')
+BEGIN
+    EXEC msdb.dbo.sp_delete_operator @name=N'FakeOperator_Backup02'
+END
 -- Alert 
 IF EXISTS (SELECT * FROM msdb.dbo.sysalerts WHERE name = N'FakeAlert02')
 BEGIN
@@ -145,6 +149,11 @@ EXEC msdb.dbo.sp_grant_login_to_proxy @proxy_name=N'DemoProxyProject02', @msdb_r
 -- CREATE Operator
 USE [msdb];
 EXEC msdb.dbo.sp_add_operator @name=N'FakeOperator02', 
+		@enabled=1, 
+		@pager_days=0, 
+		@email_address=@youremail, 
+		@pager_address=@youremail
+EXEC msdb.dbo.sp_add_operator @name=N'FakeOperator_Backup02', 
 		@enabled=1, 
 		@pager_days=0, 
 		@email_address=@youremail, 

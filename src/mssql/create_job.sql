@@ -1,3 +1,5 @@
+-- Login name
+DECLARE @login_name as nvarchar(max) = N'FSOFT.FPT.VN\KhangNHN'
 -- CREATE Reference for deployed package 
 
 Declare @reference_id bigint
@@ -21,7 +23,7 @@ EXEC  msdb.dbo.sp_add_job @job_name=N'RunDemoProject02',
 		@notify_level_page=2, 
 		@delete_level=0, 
 		@category_name=N'[Uncategorized (Local)]', 
-		@owner_login_name=N'FSOFT.FPT.VN\KhangNHN', 
+		@owner_login_name=@login_name, 
 		@notify_email_operator_name=N'FakeOperator02', @job_id = @jobId OUTPUT
 select @jobId
 print(@jobId)
@@ -40,7 +42,7 @@ EXEC msdb.dbo.sp_add_jobstep @job_name=N'RunDemoProject02', @step_name=N'run',
 		@command=@commandtext,
 		@database_name=N'GamingGroup6', 
 		@flags=0, 
-		@proxy_name=N'RunProxy'
+		@proxy_name=N'DemoProxyProject02'
 EXEC msdb.dbo.sp_update_job @job_name=N'RunDemoProject02', 
 		@enabled=1, 
 		@start_step_id=1, 
@@ -50,7 +52,7 @@ EXEC msdb.dbo.sp_update_job @job_name=N'RunDemoProject02',
 		@delete_level=0, 
 		@description=N'', 
 		@category_name=N'[Uncategorized (Local)]', 
-		@owner_login_name=N'FSOFT.FPT.VN\KhangNHN', 
+		@owner_login_name=@login_name, 
 		@notify_email_operator_name=N'FakeOperator02', 
 		@notify_page_operator_name=N''
 DECLARE @schedule_id int
@@ -88,7 +90,7 @@ EXEC  msdb.dbo.sp_add_job @job_name=N'RunBackupProject02',
 		@notify_level_page=2, 
 		@delete_level=0, 
 		@category_name=N'[Uncategorized (Local)]', 
-		@owner_login_name=N'FSOFT.FPT.VN\KhangNHN', 
+		@owner_login_name=@login_name, 
 		@notify_email_operator_name=N'FakeOperator_Backup02', @job_id = @jobID_backup OUTPUT
 select @jobID_backup
 print(@jobID_backup)
@@ -107,7 +109,7 @@ EXEC msdb.dbo.sp_add_jobstep @job_name=N'RunBackupProject02', @step_name=N'run',
 		@command=@commandtext1,
 		@database_name=N'GamingGroup6', 
 		@flags=0, 
-		@proxy_name=N'RunProxy'
+		@proxy_name=N'DemoProxyProject02'
 EXEC msdb.dbo.sp_update_job @job_name=N'RunBackupProject02', 
 		@enabled=1, 
 		@start_step_id=1, 
@@ -117,7 +119,7 @@ EXEC msdb.dbo.sp_update_job @job_name=N'RunBackupProject02',
 		@delete_level=0, 
 		@description=N'', 
 		@category_name=N'[Uncategorized (Local)]', 
-		@owner_login_name=N'FSOFT.FPT.VN\KhangNHN', 
+		@owner_login_name=@login_name, 
 		@notify_email_operator_name=N'FakeOperator_Backup02', 
 		@notify_page_operator_name=N''
 DECLARE @schedule_id1 int

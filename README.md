@@ -1,8 +1,8 @@
 # Decsription of this project
 
-*Domain: Gaming*
+**Domain: Gaming**
 
-Business problem: Analyse user retention and income maximization of a mobile game which was launched on 1st Jan 2021 and available on Apps Store, Google play. Revenue of the game is based on 3 major source: downloading fees, ads display and cash spending on the game.
+Business problem: Maximize user retention and income of game based on game types/platform, user information. Income of a game is defined as the sumation between **income by watching ads** or **income by user payment** and **income by purchasing items in game**.
 
 # Purpose
 
@@ -10,88 +10,116 @@ Building the data pipeline to solve the business problem
 
 # Detail of Work
 
-1. Generate 1 raw flat file related to the domain of project with Python and stored in raw-folder, including: SessionID, UserID, UserName, Country, CountryID, CountryName, Age, Email, Gender, MembershipID, Membership, MembershipCost, RegisterDate, RegisteredDateID, StartDateID, StartDate, StartTimestamp, EndTimestamp, CashSpend, CountImpression, eCPM, OS, OsVersion
+1. Generate one raw flat file related to the domain of project with Python and stored in Raw folder (later will be copied to Working Folder), including:
+    - RecordID: Key of record
+    - DateOfRecord: Date of record made
+    - UserID: ID of user who plays games
+    - FullName: Name of user
+    - Age: User's Age
+    - Gender: User's Gender
+    - EmailAddress: User's Email contact information
+    - Income: User's Income
+    - MarritalStatus: Marrital Status
+    - CountryID: ID of country where games is released
+    - CountryName: Country Name
+    - Region: Region of the contry
+    - ZipCode: Zip Code
+    - RegisteredDate: Date user registered for the game
+    - LastOnline: Last date that user status is online/active for the game
+    - GameID: ID of the game users play
+    - GameName: Name of the game
+    - GamePlatForm: Platform the game was developed (PC, Tablet, PS4, ...)
+    - GameCategories: Category of the game
+    - ReleaseDate: Date that the game was released
+    - PaymentType: Type of purchasing game: Free or Paid
+    - IncomeByAds: If the game is free then income by ads is not null and vice versa
+    - IncomeByPurchase: If the game is free then income by purchase is null and vice versa
+    - IncomeBoughtIngameItems: Income that comes from the cash user paid to buy items in games, available for bot Payment type
+    - ModifiedDate: Date that the fake data was generated
 
-2. Create 4 .CSV files UserInfo, Membership, Country, Transactions from Raw flat file and stored in work-folder
+2. Design data pipeline and data dimensional model
 
-3. Design a data pipeline and illustrate the pipeline with Drawio
-![architectural-design-data-pipeline](https://user-images.githubusercontent.com/88389982/129834819-2fbc26f1-62fe-4361-b124-bdd1449995a6.jpg)
+    *Data pipeline*
 
-4. Ingest data from flat file
+    ![architectural-design-data-pipeline](./docs/Project02_architecture.png)
 
-Create data stage in MSSQL
-![database_model_in_mssql](https://user-images.githubusercontent.com/88389982/129836709-37cdc32f-3fe8-4bc1-96d3-81a3967c5c60.jpg)
+    *Data dimensional model*
 
-Build a SSIS solution to do ETL into stage
-![image](https://user-images.githubusercontent.com/88389982/129835460-4c3db8a5-0b38-43b4-b82b-c8870ca2a1f6.png)
+3. Ingest data from flat file
 
+    Load one big raw data from [Working folder](./resoures/Working-Folder) into SQL tables.
+    Auto create folder to contain database profile, python scripts to upload and unload backup data.
 
-5. Load data onto Snowflake cloud
+4. Load data onto Snowflake cloud
 
-Export data in MSSQL to .csv files and store in data-snowflake folder
+    By using python scripts, SQL database is connected to SnowFlake cloud server directly.Thus, neither snow pipe nor csv splitting bulk load process is required.
 
-Load .CSV files from data-snowflake folder up to Snowflake stage with SSIS using snowsql
-
-6. Design dimensional model on Snowflake
-![dimensional_model](https://user-images.githubusercontent.com/88389982/129836615-0f65da5d-a321-4250-be51-9b8617a8a1f3.jpg)
-
-7. Store data in dimensional-model into stage and unload to work-folder in local computer
+7. Create jobs to run package to upload updated data and unload data from SnowFlake for backup
 
 8. Connect Power BI to Snowflake and build proper dashboard
 ![image](https://user-images.githubusercontent.com/88389982/129837417-18a9b6ea-06ac-4d5a-952a-64ac64f7ceb7.png)
 
 # How to setup
-1. Login into MSSQL and run [init_mssql.sql](./src/mssql/init_mssql.sql)
 
-2. Authentication SnowSQL Client
+### **Important note**
 
-Install SnowSQL
+**Before you run**
 
-Open .config file (C:/User/localname/.snowsql/config)
+- Please ensure that you have snowsql on your machine. Your snowsql config has to be configured with additional connection as:
 
-Name the connection [connection.example] as you want
+    `[connections.Project02]`   
+    `accountname = *************`   
+    `username = *************`   
+    `password = *************`   
+    `dbname = *************`    
+    `schemaname = *************`    
+    `warehousename = *************`     
+    `rolename = *************`
 
-Edit content (account name, username, password, warehouse, dbname, schemaname)
+     Please change `*****` with your credential information we provided.
+- Please install modules:
+  - faker (`pip -install faker`)
+  - snowflake-connector (refer to this link <https://docs.snowflake.com/en/user-guide/python-connector-install.html>)
+  - pyodbc (`pip -install pyodbc`)
+  - pandas (`pip -install pandas`)
+  - snowflake and pandas (`pip install "snowflake-connector-python[pandas]"`)
+- Ensure that SSISDB catalog is already created and SQL Agent is currently running
 
-Run [init_snowflake.sql](./src/mssql/init_snowfalke.sql)
+Then you can run the following:
+1. Generate data by executing [data_generator.py](./resources/data_generator.py), you can change the number of records inside the script.
 
-3. Generate data
+1. Login into MSSQL.
 
-Open CMD and run command:pip install -r requirements.txt(./resources/requirements.txt) to install package
+    Open [init_mssql.sql](./src/mssql/init_mssql.sql) and adjust `****` belows with your information and execute it:
 
-Run [data-generator.py] (./resources/data-generator.py)
+| Variables to change                           | Description                                       |
+|-----------------------------------------------|---------------------------------------------------|
+|@identity as nvarchar(50) = N'***********';    | Identity for creating Credential                   |
+|@password as nvarchar(50) = N'***********';    | Its associated password                           |
+|@youremail as nvarchar(50) =N'***********';    | Email you want to send notification to            |
+|@youremailsever as nvarchar(50) ='***********';| stpm server, ex: stmp.gmail.com                   |
+|@pythonpath sql_variant = N'***********';      | Path to python exe                                |
+|@snowflakepath sql_variant = N'***********';   | Path to snowflake script folder                   |
+|@snowsqlconfig sql_variant = N'***********';   | Path to snowsql config contained folder           |
+|@workingpath sql_variant = N'***********';     |Path to your working directory where you store data|
 
-4. Run SSIS solution:
+2. Authen SnowSQL and run [init_snowflake.sql](./src/snowflake/init_snowfalke.sql)
 
-Reset all connections in connection managers to match your file paths and your database server
+3. Deploy SSIS solution
+    
+    After ensuring that you followed all above requirements and steps, you can either deploy the package directly or run standard-alone trial for debugging.
 
-Open the last task *Data to Snowflake*, choose Process > Executable > click (...) to choose [snowPut.bat] (./src/ssis/snowPut.bat)
+    In case you want to run standard-alone trial test, ou should adjust Project prams as its description inside the package.
 
-Open [ssisPut.sql] (./src/ssis/ssisPut.sql) and edit local csv file path  in (./gaming-project/resources/data-snowflake)
+    One minor remind is that when you do deployment process, you only have to change your server name in the deployment wizzard window.
 
-5. Open Power Bi and connect to Snowflake with your account
+4. Login into MSSQL to create jobs for your package:
 
+    Open [Create_job.sql](./src/mssql/create_job.sql) and adjust `****` belows with your information and execute it **after deploying SSIS package**:
 
-# GROUP 8: WORKING ON THE PROJECT FOR FURTHER IMPROVEMENTS 
+ | Variables to change                           | Description                                       |
+|-----------------------------------------------|---------------------------------------------------|
+|@login_name as nvarchar(max) = N'***********'; | Identty name for owner login                        |
 
-1. Generating data work
-Modify and clean code for flexible folder path
+5. Open PowerBI dashboard to have insights and potential solution to the *Bussiness Question*
 
-2. SSIS solution work
-
-- Modify parameters, environment
-- Create Scripting task
-- Load 1 big csv into tables in SQL
-- Add/update data flow
-- Add Eventlog Table to event handler
-- Run python script to connect directly from SQL to snowflake based on dataframe pandas, may take longer time than bulkload and no snowpipe needed
-- Add stand-alone package sql script task to auto generate jobs/schedule/email/proxy
-
-3. Snowflake work
-- Create stream, stage, tasks, procedures
-- Build new data model
-
-![MicrosoftTeams-image (2)](https://user-images.githubusercontent.com/77618437/130921241-6c5684d3-2c6f-4769-811f-c8277bcd441f.png)
-
-4. PBI work
-- Schedule to update data
