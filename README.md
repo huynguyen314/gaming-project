@@ -58,7 +58,8 @@ Building the data pipeline to solve the business problem
 7. Create jobs to run package to upload updated data and unload data from SnowFlake for backup
 
 8. Connect Power BI to Snowflake and build proper dashboard
-![image](https://user-images.githubusercontent.com/88389982/129837417-18a9b6ea-06ac-4d5a-952a-64ac64f7ceb7.png)
+   
+![page02](./docs/dashboardpage2.png)
 
 # How to setup
 
@@ -72,10 +73,10 @@ Building the data pipeline to solve the business problem
     `accountname = *************`   
     `username = *************`   
     `password = *************`   
-    `dbname = *************`    
-    `schemaname = *************`    
-    `warehousename = *************`     
-    `rolename = *************`
+    `dbname = FA_PROJECT02_STAGEDB`    
+    `schemaname = StageGameBI`    
+    `warehousename = FA_PROJECT02_STAGEDW`     
+    `rolename = accountadmin`
 
      Please change `*****` with your credential information we provided.
 - Please install modules:
@@ -110,7 +111,7 @@ Then you can run the following:
     
     After ensuring that you followed all above requirements and steps, you can either deploy the package directly or run standard-alone trial for debugging.
 
-    In case you want to run standard-alone trial test, ou should adjust Project prams as its description inside the package.
+    In case you want to run standard-alone trial test, you should adjust Project prams as its description inside the package.
 
     One minor remind is that when you do deployment process, you only have to change your server name in the deployment wizzard window.
 
