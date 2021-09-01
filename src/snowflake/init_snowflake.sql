@@ -1,19 +1,20 @@
 		-- Set up Warehouse
-		CREATE OR REPLACE WAREHOUSE FA_PROJECT02_CLOUDDW WITH
+		CREATE OR REPLACE WAREHOUSE FA_PROJECT02_STAGEDW WITH
 			WAREHOUSE_SIZE = 'XSMALL' 
 			WAREHOUSE_TYPE = 'STANDARD' 
 			AUTO_SUSPEND = 300 
 			AUTO_RESUME = TRUE;
+	
 		/******* CREATE DATABASE AND TABLE *******/
 		-- Create Database
-		CREATE OR REPLACE DATABASE FA_PROJECT02_DB;
+		CREATE OR REPLACE DATABASE FA_PROJECT02_STAGEDB;
 
 		-- Create schema 
-		CREATE OR REPLACE SCHEMA GameBI;
+		CREATE OR REPLACE SCHEMA StageGameBI;
 
 		-- Create Table
 
-		CREATE OR REPLACE TABLE GameBI.CountryDetails
+		CREATE OR REPLACE TABLE StageGameBI.CountryDetails
 		(
 			CountryID TINYINT NOT NULL PRIMARY KEY,
 			CountryName VARCHAR(50) NULL,
@@ -22,7 +23,7 @@
 			ModifiedDate DATETIME NOT NULL
 		);
 
-		CREATE OR REPLACE TABLE GameBI.GameDetails
+		CREATE OR REPLACE TABLE StageGameBI.GameDetails
 		(
 			GameID INT NOT NULL PRIMARY KEY,
 			GameName VARCHAR(50) NOT NULL,
@@ -33,7 +34,7 @@
 			ModifiedDate DATETIME NOT NULL
 		);
 
-		CREATE OR REPLACE TABLE GameBI.UserInfo
+		CREATE OR REPLACE TABLE StageGameBI.UserInfo
 		(
 			UserID INT NOT NULL PRIMARY KEY,
 			UserName VARCHAR(50) NOT NULL,
@@ -45,7 +46,7 @@
 			ModifiedDate DATETIME NOT NULL
 		);
 
-		CREATE OR REPLACE TABLE GameBI.Transactions
+		CREATE OR REPLACE TABLE StageGameBI.Transactions
 		(
 			SessionID INT NOT NULL,
 			UserID INT NOT NULL,
@@ -59,11 +60,25 @@
 			IncomeBoughtIngameItems NUMBER NOT NULL,
 			ModifiedDate DATETIME NOT NULL,
 			CONSTRAINT PK_GameTransaction PRIMARY KEY (SessionID),
-			CONSTRAINT FK_User FOREIGN KEY (UserID) REFERENCES GameBI.UserInfo(UserID),
-			CONSTRAINT FK_Country FOREIGN KEY (CountryID) REFERENCES GameBI.CountryDetails(CountryID),
-			CONSTRAINT FK_Game FOREIGN KEY (GameID) REFERENCES GameBI.GameDetails(GameID)
+			CONSTRAINT FK_User FOREIGN KEY (UserID) REFERENCES StageGameBI.UserInfo(UserID),
+			CONSTRAINT FK_Country FOREIGN KEY (CountryID) REFERENCES StageGameBI.CountryDetails(CountryID),
+			CONSTRAINT FK_Game FOREIGN KEY (GameID) REFERENCES StageGameBI.GameDetails(GameID)
 		);
-	
+		
+
+		-- Set up Warehouse
+		CREATE OR REPLACE WAREHOUSE FA_PROJECT02_CLOUDDW WITH
+			WAREHOUSE_SIZE = 'XSMALL' 
+			WAREHOUSE_TYPE = 'STANDARD' 
+			AUTO_SUSPEND = 300 
+			AUTO_RESUME = TRUE;
+		/******* CREATE DATABASE AND TABLE *******/
+		-- Create Database
+		CREATE OR REPLACE DATABASE FA_PROJECT02_DB;
+
+		-- Create schema 
+		CREATE OR REPLACE SCHEMA GameBI;
+
 		-- CREATE DIM/FACT TABLES
 
 		CREATE OR REPLACE TABLE GameBI.Dim_Country
@@ -110,7 +125,7 @@
 		AS
 		  WITH CTE_MY_DATE AS (
 			SELECT DATEADD(DAY, SEQ4(), '2017-01-01') AS DATEKEY
-			  FROM TABLE(GENERATOR(ROWCOUNT=>2000))  
+			  FROM TABLE(GENERATOR(ROWCOUNT=>1461))  
 		  )
 		  SELECT TO_CHAR(DATE(DATEKEY),'YYYYMMDD'),
 				 DATE(DATEKEY)
@@ -134,7 +149,6 @@
 			UserKey INT NOT NULL,
 			CountryKey INT NOT NULL,
 			GameKey INT NOT NULL,
-			DateOfRecord DATE NOT NULL,
 			RegisteredDate DATE NOT NULL,
 			IncomeByAds FLOAT NOT NULL,
 			IncomeByPurchase FLOAT NOT NULL,
@@ -155,7 +169,7 @@
 
 		---LOAD DATA STREAM
 		CREATE OR REPLACE STREAM fact_transact_stream
-		ON TABLE GameBI.Transactions;
+		ON TABLE FA_PROJECT02_STAGEDB.StageGameBI.Transactions;
 
 		---CREATE A STORED PROCEDURE
 
@@ -170,14 +184,14 @@
 		  var sqlcommand2 = `TRUNCATE TABLE GameBI.Dim_User;`;
 		  var sqlcommand3= `TRUNCATE TABLE GameBI.Fact_Transactions;`;
 
-		  var sqlcommand4 = `INSERT INTO GameBI.Dim_Country(CountryID,CountryName,ZipCode, Region)
-		  SELECT CountryID,CountryName,ZipCode, Region FROM GameBI.CountryDetails;`;
-		  var sqlcommand5 = `INSERT INTO GameBI.Dim_Game (GameID,GameName,GamePlatform,GameCategory, ReleasedDate,PaymentType) 
-		  SELECT GameID,GameName,GamePlatform,GameCategory, ReleasedDate,PaymentType FROM GameBI.GameDetails;`;
-		  var sqlcommand6= ` INSERT INTO GameBI.Dim_User(UserID,UserName,Age,Gender,EmailAddress,Income,MarritalStatus) 
-		  SELECT UserID,UserName,Age,Gender,EmailAddress,Income,MarritalStatus FROM GameBI.UserInfo;`;
-		  var sqlcommand7 = `INSERT INTO GameBI.Fact_Transactions(DateKey,UserKey,CountryKey, GameKey,DateOfRecord,RegisteredDate,IncomeByAds, IncomeByPurchase, IncomeBoughtIngameItems,LastSeen) 
-		  SELECT DimDate.DateKey, Users.UserKey, Country.CountryKey, Game.GameKey, Transact.DateOfRecord,Transact.RegisteredDate,Transact.IncomeByAds, Transact.IncomeByPurchase,Transact.IncomeBoughtIngameItems,
+		  var sqlcommand4 = `INSERT INTO FA_PROJECT02_DB.GameBI.Dim_Country(CountryID,CountryName,ZipCode, Region)
+		  SELECT CountryID,CountryName,ZipCode, Region FROM FA_PROJECT02_STAGEDB.StageGameBI.CountryDetails;`;
+		  var sqlcommand5 = `INSERT INTO FA_PROJECT02_DB.GameBI.Dim_Game (GameID,GameName,GamePlatform,GameCategory, ReleasedDate,PaymentType) 
+		  SELECT GameID,GameName,GamePlatform,GameCategory, ReleasedDate,PaymentType FROM FA_PROJECT02_STAGEDB.StageGameBI.GameDetails;`;
+		  var sqlcommand6= ` INSERT INTO FA_PROJECT02_DB.GameBI.Dim_User(UserID,UserName,Age,Gender,EmailAddress,Income,MarritalStatus) 
+		  SELECT UserID,UserName,Age,Gender,EmailAddress,Income,MarritalStatus FROM FA_PROJECT02_STAGEDB.StageGameBI.UserInfo;`;
+		  var sqlcommand7 = `INSERT INTO FA_PROJECT02_DB.GameBI.Fact_Transactions(DateKey,UserKey,CountryKey, GameKey,RegisteredDate,IncomeByAds, IncomeByPurchase, IncomeBoughtIngameItems,LastSeen) 
+		  SELECT DimDate.DateKey, Users.UserKey, Country.CountryKey, Game.GameKey,Transact.RegisteredDate,Transact.IncomeByAds, Transact.IncomeByPurchase,Transact.IncomeBoughtIngameItems,
 				(Transact.DateOfRecord-Transact.LastOnline) as LastSeen
 			FROM fact_transact_stream AS Transact
 			JOIN GameBI.Dim_Country AS Country ON (Transact.CountryID=Country.CountryID)
@@ -205,8 +219,8 @@
 		;
 
 		CREATE OR REPLACE TASK ETL_To_WH
-		WAREHOUSE = FA_PROJECT02_CLOUDDW
-		SCHEDULE = '3 MINUTE'
+		WAREHOUSE = FA_PROJECT02_STAGEDW
+		SCHEDULE = '8 MINUTE'
 		WHEN SYSTEM$STREAM_HAS_DATA('fact_transact_stream')
 		AS
 		call load_data_sp();
