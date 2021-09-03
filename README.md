@@ -57,9 +57,13 @@ Building the data pipeline to solve the business problem
 
 7. Create jobs to run package to upload updated data and unload data from SnowFlake for backup
 
-8. Connect Power BI to Snowflake and build proper dashboard
-   
+8. Connect Power BI to Snowflake and build proper dashboard (PowerBI service [link](https://app.powerbi.com/links/G5LkAI9M9E?ctid=f01e930a-b52e-42b1-b70f-a8882b5d043b&pbi_source=linkShare) or [PowerBI Desktop file](./docs/Final_prototype_project02.pbix))
+
+![page01](./docs/dashboardpage1.png)
+
 ![page02](./docs/dashboardpage2.png)
+
+![page03](./docs/dashboardpage3.png)
 
 # How to setup
 
