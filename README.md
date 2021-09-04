@@ -1,4 +1,4 @@
-# Decsription of this project
+# Description of this project
 
 **Domain: Gaming**
 
