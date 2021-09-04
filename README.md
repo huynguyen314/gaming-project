@@ -2,7 +2,7 @@
 
 **Domain: Gaming**
 
-Business problem: Maximize user retention and income of game based on game types/platform, user information. Income of a game is defined as the sumation between **income by watching ads** or **income by user payment** and **income by purchasing items in game**.
+Business problem: Maximize user retention and income of game based on game types/platform, user information. Income of a game is defined as the sum between **income by watching ads** or **income by user payment** and **income by purchasing items in game**.
 
 # Purpose
 
