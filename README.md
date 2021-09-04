@@ -125,7 +125,7 @@ Then you can run the following:
 
  | Variables to change                           | Description                                       |
 |-----------------------------------------------|---------------------------------------------------|
-|@login_name as nvarchar(max) = N'***********'; | Identty name for owner login                        |
+|@login_name as nvarchar(max) = N'***********'; | Identity name for owner login                        |
 
 5. Open PowerBI dashboard to have insights and potential solution to the *Bussiness Question*
 
