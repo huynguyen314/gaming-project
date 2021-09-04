@@ -44,6 +44,7 @@ Building the data pipeline to solve the business problem
     ![architectural-design-data-pipeline](./docs/Project02_architecture.png)
 
     *Data dimensional model*
+    
     ![dimensional-data-model](./docs/Datamodel.png)
 
 3. Ingest data from flat file
