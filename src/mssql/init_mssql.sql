@@ -39,12 +39,6 @@ IF EXISTS (SELECT * FROM SSISDB.catalog.projects WHERE name = N'SSIS_GamingGroup
 -- Catalog
 IF EXISTS (SELECT * FROM SSISDB.catalog.folders WHERE name = N'demo_Catalog')
     EXEC [SSISDB].[catalog].[delete_folder] @folder_name=N'demo_Catalog'
--- Proxy
-SELECT @Id = proxy_id FROM msdb.dbo.sysproxies WHERE (name = N'DemoProxyProject02')
-IF (@Id IS NOT NULL)
-BEGIN
-    EXEC msdb.dbo.sp_delete_proxy @Id
-END
 -- Operator
 IF EXISTS (SELECT * FROM msdb.dbo.sysoperators WHERE name = N'FakeOperator02')
 BEGIN
@@ -71,6 +65,13 @@ IF (@jobId IS NOT NULL)
 BEGIN
     EXEC msdb.dbo.sp_delete_job @jobId
 END
+-- Proxy
+SELECT @Id = proxy_id FROM msdb.dbo.sysproxies WHERE (name = N'DemoProxyProject02')
+IF (@Id IS NOT NULL)
+BEGIN
+    EXEC msdb.dbo.sp_delete_proxy @Id
+END
+
 --------------------------------------------------------------------
 -- CREATE CREDENTIALS
 USE [master];
