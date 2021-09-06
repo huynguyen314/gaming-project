@@ -179,18 +179,18 @@
 		  as     
 		  $$  
 		  var result;
-		  var sqlcommand0 = `TRUNCATE TABLE GameBI.Dim_Country;`;
-		  var sqlcommand1 = `TRUNCATE TABLE GameBI.Dim_Game;`;
-		  var sqlcommand2 = `TRUNCATE TABLE GameBI.Dim_User;`;
-		  var sqlcommand3= `TRUNCATE TABLE GameBI.Fact_Transactions;`;
+		  var trunc_dimcountry = `TRUNCATE TABLE GameBI.Dim_Country;`;
+		  var trunc_dimgame = `TRUNCATE TABLE GameBI.Dim_Game;`;
+		  var trunc_dimuser = `TRUNCATE TABLE GameBI.Dim_User;`;
+		  var trunc_facttransact= `TRUNCATE TABLE GameBI.Fact_Transactions;`;
 
-		  var sqlcommand4 = `INSERT INTO FA_PROJECT02_DB.GameBI.Dim_Country(CountryID,CountryName,ZipCode, Region)
+		  var insert_dimcountry = `INSERT INTO FA_PROJECT02_DB.GameBI.Dim_Country(CountryID,CountryName,ZipCode, Region)
 		  SELECT CountryID,CountryName,ZipCode, Region FROM FA_PROJECT02_STAGEDB.StageGameBI.CountryDetails;`;
-		  var sqlcommand5 = `INSERT INTO FA_PROJECT02_DB.GameBI.Dim_Game (GameID,GameName,GamePlatform,GameCategory, ReleasedDate,PaymentType) 
+		  var insert_dimgame = `INSERT INTO FA_PROJECT02_DB.GameBI.Dim_Game (GameID,GameName,GamePlatform,GameCategory, ReleasedDate,PaymentType) 
 		  SELECT GameID,GameName,GamePlatform,GameCategory, ReleasedDate,PaymentType FROM FA_PROJECT02_STAGEDB.StageGameBI.GameDetails;`;
-		  var sqlcommand6= ` INSERT INTO FA_PROJECT02_DB.GameBI.Dim_User(UserID,UserName,Age,Gender,EmailAddress,Income,MarritalStatus) 
+		  var insert_dimuser= ` INSERT INTO FA_PROJECT02_DB.GameBI.Dim_User(UserID,UserName,Age,Gender,EmailAddress,Income,MarritalStatus) 
 		  SELECT UserID,UserName,Age,Gender,EmailAddress,Income,MarritalStatus FROM FA_PROJECT02_STAGEDB.StageGameBI.UserInfo;`;
-		  var sqlcommand7 = `INSERT INTO FA_PROJECT02_DB.GameBI.Fact_Transactions(DateKey,UserKey,CountryKey, GameKey,RegisteredDate,IncomeByAds, IncomeByPurchase, IncomeBoughtIngameItems,LastSeen) 
+		  var insert_facttransact = `INSERT INTO FA_PROJECT02_DB.GameBI.Fact_Transactions(DateKey,UserKey,CountryKey, GameKey,RegisteredDate,IncomeByAds, IncomeByPurchase, IncomeBoughtIngameItems,LastSeen) 
 		  SELECT DimDate.DateKey, Users.UserKey, Country.CountryKey, Game.GameKey,Transact.RegisteredDate,Transact.IncomeByAds, Transact.IncomeByPurchase,Transact.IncomeBoughtIngameItems,
 				(Transact.DateOfRecord-Transact.LastOnline) as LastSeen
 			FROM fact_transact_stream AS Transact
@@ -201,14 +201,14 @@
 			WHERE transact.METADATA$ACTION = 'INSERT';`;
 
 		 try {
-			snowflake.execute({sqlText: sqlcommand0 });        
-			snowflake.execute({sqlText: sqlcommand1 });
-			snowflake.execute({sqlText: sqlcommand2 });
-			snowflake.execute({sqlText: sqlcommand3 });
-			snowflake.execute({sqlText: sqlcommand4 });
-			snowflake.execute({sqlText: sqlcommand5 });
-			snowflake.execute({sqlText: sqlcommand6 });
-			snowflake.execute({sqlText: sqlcommand7 });
+			snowflake.execute({sqlText: trunc_dimcountry });        
+			snowflake.execute({sqlText: trunc_dimgame });
+			snowflake.execute({sqlText: trunc_dimuser });
+			snowflake.execute({sqlText: trunc_facttransact });
+			snowflake.execute({sqlText: insert_dimcountry });
+			snowflake.execute({sqlText: insert_dimgame });
+			snowflake.execute({sqlText: insert_dimuser });
+			snowflake.execute({sqlText: insert_facttransact });
 			result = "Succeeded"
 		 }
 		 catch(err) {
@@ -225,5 +225,7 @@
 		AS
 		call load_data_sp();
 		ALTER TASK ETL_To_WH RESUME;
+
+
 
 
