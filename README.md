@@ -110,6 +110,8 @@ Then you can run the following:
 |@snowsqlconfig sql_variant = N'***********';   | Path to snowsql config contained folder           |
 |@workingpath sql_variant = N'***********';     |Path to your working directory where you store data|
 
+**Note that your path should not contain any space characters!**
+
 2. Authen SnowSQL and run [init_snowflake.sql](./src/snowflake/init_snowfalke.sql)
 
 3. Deploy SSIS solution
