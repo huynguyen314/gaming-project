@@ -104,7 +104,7 @@ Then you can run the following:
 |@identity as nvarchar(50) = N'***********';    | Identity for creating Credential                   |
 |@password as nvarchar(50) = N'***********';    | Its associated password                           |
 |@youremail as nvarchar(50) =N'***********';    | Email you want to send notification to            |
-|@youremailsever as nvarchar(50) ='***********';| stpm server, ex: stmp.gmail.com                   |
+|@youremailsever as nvarchar(50) ='***********';| smtp server, ex: smtp.gmail.com                   |
 |@pythonpath sql_variant = N'***********';      | Path to python exe                                |
 |@snowflakepath sql_variant = N'***********';   | Path to snowflake script folder                   |
 |@snowsqlconfig sql_variant = N'***********';   | Path to snowsql config contained folder           |
