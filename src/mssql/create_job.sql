@@ -95,7 +95,7 @@ EXEC  msdb.dbo.sp_add_job @job_name=N'RunBackupProject02',
 select @jobID_backup
 print(@jobID_backup)
 EXEC msdb.dbo.sp_add_jobserver @job_name=N'RunBackupProject02', @server_name = @@SERVERNAME
-DECLARE @commandtext1 as nvarchar(max) = N'/ISSERVER "\"\SSISDB\demo_Catalog\SSIS_GamingGroup6\Upload2Snow.dtsx\"" /SERVER "\"' +''+@@SERVERNAME +''+
+DECLARE @commandtext1 as nvarchar(max) = N'/ISSERVER "\"\SSISDB\demo_Catalog\SSIS_GamingGroup6\UnloadFromSnow.dtsx\"" /SERVER "\"' +''+@@SERVERNAME +''+
 '\"" /ENVREFERENCE '+'' + CAST(@reference_id as varchar(10)) + ''+' /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1 /Par "\"$ServerOption::SYNCHRONIZED(Boolean)\"";True /CALLERINFO SQLAGENT /REPORTING E';
 print(@commandtext1)
 EXEC msdb.dbo.sp_add_jobstep @job_name=N'RunBackupProject02', @step_name=N'run', 
@@ -122,7 +122,7 @@ EXEC msdb.dbo.sp_update_job @job_name=N'RunBackupProject02',
 		@owner_login_name=@login_name, 
 		@notify_email_operator_name=N'FakeOperator_Backup02', 
 		@notify_page_operator_name=N''
-DECLARE @schedule_id1 int
+DECLARE @schedule_id_backup int
 EXEC msdb.dbo.sp_add_jobschedule @job_name=N'RunBackupProject02', @name=N'RunWeekly', 
 		@enabled=1, 
 		@freq_type=8, 
@@ -134,7 +134,7 @@ EXEC msdb.dbo.sp_add_jobschedule @job_name=N'RunBackupProject02', @name=N'RunWee
 		@active_start_date=20210915, 
 		@active_end_date=99991231, 
 		@active_start_time=1, 
-		@active_end_time=235959, @schedule_id = @schedule_id1 OUTPUT
-select @schedule_id1
+		@active_end_time=235959, @schedule_id = @schedule_id_backup OUTPUT
+select @schedule_id_backup
 
 
